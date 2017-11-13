@@ -1,2 +1,8 @@
 *.log
 *.vvp
+*.swp
+*.vcd
+
+*.un~
+*.v~
+.gitignore~

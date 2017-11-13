@@ -9,7 +9,7 @@ module register_file(
   rd_data_b,
   
   wr_en,
-  wr_reg
+  wr_reg,
   wr_data
 );
   // Number of registers in the register file
@@ -50,14 +50,14 @@ module register_file(
       end
       
     // Write to the desired register, never write to register 0
-    end else if(wr_en == 1 && wr_reg != 0) begin
+    end else if(wr_en == 1) begin
       registers[wr_reg] <= wr_data;
     end
   end
   
   // Read registers on falling edge of clock
   always@(negedge clk) begin
-    rd_data_a <= register_file[rd_reg_a];
-    rd_data_b <= register_file[rd_reg_b];
+    rd_data_a <= registers[rd_reg_a];
+    rd_data_b <= registers[rd_reg_b];
   end
 endmodule
