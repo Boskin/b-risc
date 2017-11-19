@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module tb_register_file;
 
   localparam REG_COUNT = 32;
@@ -43,7 +45,7 @@ module tb_register_file;
 
   initial begin
     $dumpfile("tb_register_file.vcd");
-    $dumpvars(0, tb_register_file, u0.register_file);
+    $dumpvars;
 
     #1
     clk <= 0;
@@ -79,7 +81,7 @@ module tb_register_file;
   end
 
   always@(negedge clk) begin
-    $display("r%d: %d", rd_reg_a, rd_data_a);
+    rd_reg_a <= wr_reg;
   end
 
 endmodule

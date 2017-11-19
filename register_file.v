@@ -52,6 +52,8 @@ module register_file(
     // Write to the desired register, never write to register 0
     end else if(wr_en == 1) begin
       registers[wr_reg] <= wr_data;
+
+      $display("Just wrote %d to r%d", wr_data, wr_reg);
     end
   end
   
@@ -59,5 +61,7 @@ module register_file(
   always@(negedge clk) begin
     rd_data_a <= registers[rd_reg_a];
     rd_data_b <= registers[rd_reg_b];
+
+    $display("r%d=%d", rd_reg_a, rd_data_a);
   end
 endmodule
