@@ -1,0 +1,10 @@
+register_file.v
+alu.v
+
+id_decoder.v
+
+fe.v
+id.v
+ex.v
+me.v
+wb.v
