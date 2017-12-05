@@ -25,6 +25,7 @@ module alu(
   always@(*) begin
     case(op)
       `ALU_ADD: eval = opp_a + opp_b;
+      `ALU_SUB: eval = opp_a - opp_b;
       `ALU_AND: eval = opp_a & opp_b;
       `ALU_OR: eval = opp_a | opp_b;
       `ALU_XOR: eval = opp_a ^ opp_b;
