@@ -3,6 +3,7 @@
 module me(
   clk,
   clr,
+  stall,
 
   i_pc,
   i_instr,
@@ -18,10 +19,11 @@ module me(
   o_dest_src,
   o_dest_reg,
 
-  o_alu_eval,
+  o_alu_eval
 );
   input clk;
   input clr;
+  input stall;
 
   input [`ADDR_W - 1:0] i_pc;
   input [`INSTR_W - 1:0] i_instr;
@@ -64,7 +66,7 @@ module me(
       r_dest_reg <= 0;
 
       r_alu_eval <= 0;
-    end else begin
+    end else if(stall != 0) begin
       r_pc <= i_pc;
       r_instr <= i_instr;
 

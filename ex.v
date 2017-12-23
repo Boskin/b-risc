@@ -4,6 +4,7 @@
 module ex(
   clk,
   clr,
+  stall,
 
   i_pc,
   i_instr,
@@ -28,6 +29,7 @@ module ex(
 
 input clk;
 input clr;
+input stall;
 
 input [`ADDR_W - 1:0] i_pc;
 input [`INSTR_W - 1:0] i_instr;
@@ -53,8 +55,8 @@ reg [`WORD_W - 1:0] r_imm;
 reg [`DEST_SRC_W - 1:0] r_dest_src;
 reg [`REG_IDX_W - 1:0] r_dest_reg;
 
-wire [`WORD_W - 1:0] alu_eval;
-wire alu_zero;
+wire [`WORD_W - 1:0] s_alu_eval;
+wire s_alu_zero;
 
 output [`ADDR_W - 1:0] o_pc;
 output [`INSTR_W - 1:0] o_instr;
@@ -64,13 +66,14 @@ output [`REG_IDX_W - 1:0] o_dest_reg;
 
 output [`WORD_W - 1:0] o_alu_eval;
 
+// Outputs
 assign o_pc = r_pc;
 assign o_instr = r_instr;
 
 assign o_dest_src = r_dest_src;
 assign o_dest_reg = r_dest_reg;
 
-assign o_alu_eval = alu_eval;
+assign o_alu_eval = s_alu_eval;
 
 always@(posedge clk) begin
   if(clr == 1) begin
@@ -85,7 +88,7 @@ always@(posedge clk) begin
 
     r_dest_src <= `DEST_SRC_NONE;
     r_dest_reg <= 0;
-  end else begin
+  end else if(stall == 0) begin
     r_pc <= i_pc;
     r_instr <= i_instr;
 
@@ -106,8 +109,8 @@ alu comp(
 
   .op(r_alu_op),
 
-  .eval(alu_eval),
-  .zero(alu_zero)
+  .eval(s_alu_eval),
+  .zero(s_alu_zero)
 );
 
 endmodule
