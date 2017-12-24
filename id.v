@@ -36,14 +36,19 @@ module id(
   input [`ADDR_W - 1:0] i_pc;
   input [`INSTR_W - 1:0] i_instr;
 
+  wire [`INSTR_W - 1:0] s_instr;
+
   // Signals from write-back stage
   input i_wb_dest_en;
   input [`REG_IDX_W - 1:0] i_wb_dest_reg;
   input [`WORD_W - 1:0] i_wb_dest_data;
 
   // PC and instruction being sent to next pipeline stage
-  output reg [`ADDR_W - 1:0] o_pc;
-  output reg [`INSTR_W - 1:0] o_instr;
+  output [`ADDR_W - 1:0] o_pc;
+  output [`INSTR_W - 1:0] o_instr;
+
+  reg [`ADDR_W - 1:0] r_pc;
+  reg [`INSTR_W - 1:0] r_instr;
 
   // ALU operation
   output [`ALU_OP_W - 1:0] o_alu_op;
@@ -71,16 +76,22 @@ module id(
 
   always@(posedge clk) begin
     if(clr == 1) begin
-      o_pc <= 0;
-      o_instr <= 0;
+      r_pc <= 0;
+      r_instr <= 0;
     end else if(stall == 0) begin
-      o_pc <= i_pc;
-      o_instr <= i_instr;
+      r_pc <= i_pc;
+      r_instr <= i_instr;
     end
   end
 
+  assign o_pc = r_pc;
+  assign o_instr = r_instr;
+
+  // If stalling, use the preserved instruction
+  assign s_instr = stall == 0 ? i_instr : r_instr;
+
   id_decoder dec(
-    .instr(i_instr),
+    .instr(s_instr),
 
     .alu_op(o_alu_op),
     .imm(o_imm),
