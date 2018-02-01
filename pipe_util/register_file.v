@@ -50,7 +50,7 @@ module register_file(
       end
       
     // Write to the desired register, never write to register 0
-    end else if(wr_en == 1) begin
+    end else if(wr_en == 1 && wr_reg != 0) begin
       registers[wr_reg] <= wr_data;
     end
   end
