@@ -1,7 +1,7 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
-`define ASSERT(cond) \
+`define ASSERT(cond) 
   if(!(cond)) begin \
     $display("Assertion failed at time %d!", $time); \
   end
@@ -29,6 +29,7 @@ module tb_memory_interface;
   reg [`MEM_COUNT_W - 1:0] test_count [0:TEST_DATA_SIZE - 1];
   reg [`WORD_W - 1:0] test_data [0:TEST_DATA_SIZE - 1];
 
+  integer test_num;
   integer i;
 
   initial begin
@@ -46,19 +47,16 @@ module tb_memory_interface;
     // Generate test data
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
       test_count[i] = $urandom % 3 + 1;
-      test_addr[i] = $urandom % (1 << `ADDR_W);
-      test_data[i] = $urandom % (1 << `ADDR_W);
-
-      case(test_count[i])
-        `MEM_COUNT_BYTE: test_data[i][`WORD_W - 1:8] = 0;
-
-        `MEM_COUNT_HALF: begin
-          test_addr[i][0] = 0;
-          test_data[i][`WORD_W - 1:16] = 0;
-        end
-
-        `MEM_COUNT_WORD: test_addr[i][1:0] = 0;
-      endcase
+      test_addr[i] = $urandom % WORD_COUNT;
+      test_data[i] = $urandom % (1 << `WORD_W);
+      
+      if(test_count[i] == `MEM_COUNT_HALF) begin
+        test_addr[i][0] = 0;
+      end else if(test_count[i] == `MEM_COUNT_WORD) begin
+        test_addr[i][1:0] = 0;
+      end
+      
+      $display("%d %d %d", test_data[i], test_addr[i], test_count[i]);
     end
 
     #(RESET_DURATION * CLK_PERIOD);
@@ -67,11 +65,19 @@ module tb_memory_interface;
 
     #(CLK_PERIOD);
 
-    $display("Testing misalignment!");
+    test_num = 1;
+    $display("[%0d] Testing misalignment!", test_num);
+
+    req_wr_en = 1;
+    req_wr_data = 32'hdeadbeef;
+    req_count = `MEM_COUNT_WORD;
+    req_addr = 32'h1;
 
     #(CLK_PERIOD);
+    `ASSERT(res_code == `MEM_CODE_MISALIGNED)
 
-    $display("Testing write!");
+    test_num = test_num + 1;
+    $display("[%0d] Testing write!", test_num);
 
     req_wr_en = 1;
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
@@ -85,7 +91,8 @@ module tb_memory_interface;
       `ASSERT(res_code == `MEM_CODE_WRITE)
     end
 
-    $display("Testing read!");
+    test_num = test_num + 1;
+    $display("[%0d] Testing read!", test_num);
 
     req_wr_en = 0;
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
