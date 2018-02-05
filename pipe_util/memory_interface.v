@@ -54,7 +54,7 @@ module memory_interface(
     end else if(i_req_count != `MEM_COUNT_NONE) begin
       // Memory alignment check
       if((i_req_count == `MEM_COUNT_HALF && s_offset[0] != 0) ||
-        (i_req_count == `MEM_COUNT_BYTE && s_offset != 0)) begin
+        (i_req_count == `MEM_COUNT_WORD && s_offset != 0)) begin
 
         o_res_rd_data <= 0;
         o_res_code <= `MEM_CODE_MISALIGNED;
@@ -113,7 +113,7 @@ module memory_interface(
               2: o_res_rd_data[15:0] <= r_mem[s_addr_aligned][31:16];
             endcase
 
-          `MEM_COUNT_WORD: o_res_rd_data <= r_mem[i_req_addr];
+          `MEM_COUNT_WORD: o_res_rd_data <= r_mem[s_addr_aligned];
 
           default: o_res_code <= `MEM_CODE_INVALID;
         endcase
