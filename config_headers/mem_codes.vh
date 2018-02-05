@@ -5,7 +5,7 @@
 
 `define MEM_OP_NOP 0
 `define MEM_OP_WR_WORD 1
-`define MEM_OP_WR_HWORD 2
+`define MEM_OP_WR_HALF 2
 `define MEM_OP_WR_BYTE 3
 `define MEM_OP_RD_WORD 4
 `define MEM_OP_RD_HWORD 5
