@@ -59,6 +59,11 @@ module memory_interface(
         o_res_rd_data <= 0;
         o_res_code <= `MEM_CODE_MISALIGNED;
 
+      // Make sure the address is within the bounds of the memory device
+      end else if(s_addr_aligned >= WORD_COUNT) begin
+        o_res_rd_data <= 0;
+        o_res_code <= `MEM_CODE_OUT_OF_BOUNDS;
+
       // Check if write is enabled
       end else if(i_req_wr_en == 1) begin
 
@@ -114,6 +119,7 @@ module memory_interface(
         endcase
 
       end
+    // No request was made, so do nothing
     end else begin
 
       o_res_rd_data <= 0;
