@@ -1,9 +1,10 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
-`define ASSERT(cond) 
+`define ASSERT(cond)\ 
   if(!(cond)) begin \
     $display("Assertion failed at time %d!", $time); \
+    $finish; \
   end
 
 module tb_memory_interface;
@@ -48,15 +49,13 @@ module tb_memory_interface;
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
       test_count[i] = $urandom % 3 + 1;
       test_addr[i] = $urandom % WORD_COUNT;
-      test_data[i] = $urandom % (1 << `WORD_W);
+      test_data[i] = $urandom;
       
       if(test_count[i] == `MEM_COUNT_HALF) begin
         test_addr[i][0] = 0;
       end else if(test_count[i] == `MEM_COUNT_WORD) begin
         test_addr[i][1:0] = 0;
-      end
-      
-      $display("%d %d %d", test_data[i], test_addr[i], test_count[i]);
+      end  
     end
 
     #(RESET_DURATION * CLK_PERIOD);
@@ -91,15 +90,16 @@ module tb_memory_interface;
       `ASSERT(res_code == `MEM_CODE_WRITE)
     end
 
+    req_wr_en = 0;
+
     test_num = test_num + 1;
     $display("[%0d] Testing read!", test_num);
 
-    req_wr_en = 0;
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
       req_addr = test_addr[i];
       req_count = test_count[i];
 
-      #(CLK_PERIOD);
+      #(2 * CLK_PERIOD);
 
       `ASSERT(rd_data == test_data[i])
       `ASSERT(res_code == `MEM_CODE_READ)
