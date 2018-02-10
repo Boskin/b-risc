@@ -8,8 +8,6 @@ module tb_register_file;
   
   localparam CLK_PERIOD = 4;
   localparam RESET_DURATION = 5;
-  
-  localparam SIM_RUNTIME = 50;
 
   reg clk;
   reg aresetn;
