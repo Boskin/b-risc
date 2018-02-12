@@ -3,7 +3,7 @@
 
 `define ASSERT(cond)\ 
   if(!(cond)) begin \
-    $display("Assertion failed at time %d!", $time); \
+    $display("Assertion failed at time %0d!", $time); \
     $finish; \
   end
 
@@ -60,55 +60,75 @@ module tb_memory_interface;
     req_count = `MEM_COUNT_NONE;
     req_wr_en = 0;
 
-    // Generate test data
+    // Generate test cases
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
+      // Randomly choose the write size (byte, halfword, word)
       test_count[i] = $urandom % 3 + 1;
-      test_addr[i] = $urandom % WORD_COUNT;
+      // Only generate the word address here
+      test_addr[i] = i << 2;
       test_data[i] = $urandom;
       
+      // Do some more generation depending on the size
       case(test_count[i])
-        `MEM_COUNT_BYTE: test_data[i][31:8] = 0;
-
-        `MEM_COUNT_HALF: begin
-          test_addr[i][0] = 0;
-          test_data[i][31:16] = 0;
+        `MEM_COUNT_BYTE: begin
+          // Randomize the exact address
+          test_addr[i][1:0] = $urandom % 4;
+          test_data[i][31:8] = 0;
         end
 
-        `MEM_COUNT_WORD: test_addr[i][1:0] = 0;
+        `MEM_COUNT_HALF: begin
+          // Only randomize on a halfword boundary
+          test_addr[i][0] = 0;
+          test_addr[i][1] = $urandom % 2;
+          test_data[i][31:16] = 0;
+        end
       endcase
     end
 
+    // Wait for the entire reset duration
     #(RESET_DURATION * CLK_PERIOD);
 
     aresetn = 1;
 
     #(CLK_PERIOD);
 
+    /************************************/
+    /* Test case 1: memory misalignment */
+    /************************************/
     test_num = 1;
     $display("[%0d] Testing misalignment!", test_num);
 
     req_wr_en = 1;
     req_wr_data = 32'hdeadbeef;
     req_count = `MEM_COUNT_WORD;
+    // This should throw an error for not being on a word boundary
     req_addr = 32'h1;
 
     #(CLK_PERIOD);
+    // Make sure an error was actually thrown
     `ASSERT(res_code == `MEM_CODE_MISALIGNED)
 
+    /***************************/
+    /* Test case 2: write data */
+    /***************************/
     test_num = test_num + 1;
     $display("[%0d] Testing write!", test_num);
 
     req_wr_en = 1;
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
+      // Write all of the generated test data at their desired addresses
       req_addr = test_addr[i];
       req_count = test_count[i];
       req_wr_data = test_data[i];
 
       #(CLK_PERIOD);
 
+      // Make sure the read register is cleared
       `ASSERT(rd_data == 0)
+      // Make sure the right response code was sent
       `ASSERT(res_code == `MEM_CODE_WRITE)
 
+      // Check if the data is actually in the right spot in the memory array
       case(req_count)
         `MEM_COUNT_BYTE: begin
         
@@ -136,19 +156,23 @@ module tb_memory_interface;
     end
 
     req_wr_en = 0;
-
+    
+    /**************************/
+    /* Test case 3: read data */
+    /**************************/
     test_num = test_num + 1;
     $display("[%0d] Testing read!", test_num);
 
     for(i = 0; i < TEST_DATA_SIZE; i = i + 1) begin
+      // Verify that the data written from the test addresses can be read
       req_addr = test_addr[i];
       req_count = test_count[i];
 
       #(CLK_PERIOD);
-      $display("%x", dut.r_mem[req_addr[`ADDR_W - 1:2]]);
-      $display("%x", test_data[i]);
-
+      
+      // Verify the accuracy of the data
       `ASSERT(rd_data == test_data[i])
+      // Make sure the right response code was returned
       `ASSERT(res_code == `MEM_CODE_READ)
     end
 
