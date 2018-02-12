@@ -32,6 +32,21 @@ module tb_memory_interface;
 
   integer test_num;
   integer i;
+  
+  memory_interface#(
+    .WORD_COUNT(WORD_COUNT)
+  ) dut(
+    .clk(clk),
+    .aresetn(aresetn),
+
+    .i_req_addr(req_addr),
+    .i_req_wr_data(req_wr_data),
+    .i_req_count(req_count),
+    .i_req_wr_en(req_wr_en),
+
+    .o_res_rd_data(rd_data),
+    .o_res_code(res_code)
+  );
 
   initial begin
     $dumpfile("tb_memory_interface.vcd");
@@ -51,11 +66,16 @@ module tb_memory_interface;
       test_addr[i] = $urandom % WORD_COUNT;
       test_data[i] = $urandom;
       
-      if(test_count[i] == `MEM_COUNT_HALF) begin
-        test_addr[i][0] = 0;
-      end else if(test_count[i] == `MEM_COUNT_WORD) begin
-        test_addr[i][1:0] = 0;
-      end  
+      case(test_count[i])
+        `MEM_COUNT_BYTE: test_data[i][31:8] = 0;
+
+        `MEM_COUNT_HALF: begin
+          test_addr[i][0] = 0;
+          test_data[i][31:16] = 0;
+        end
+
+        `MEM_COUNT_WORD: test_addr[i][1:0] = 0;
+      endcase
     end
 
     #(RESET_DURATION * CLK_PERIOD);
@@ -88,6 +108,31 @@ module tb_memory_interface;
 
       `ASSERT(rd_data == 0)
       `ASSERT(res_code == `MEM_CODE_WRITE)
+
+      case(req_count)
+        `MEM_COUNT_BYTE: begin
+        
+          case(req_addr[1:0])
+            0: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][7:0] == req_wr_data[7:0])
+            1: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][15:8] == req_wr_data[7:0])
+            2: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][23:16] == req_wr_data[7:0])
+            3: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][31:24] == req_wr_data[7:0])
+          endcase
+        
+        end
+
+        `MEM_COUNT_HALF: begin
+
+          case(req_addr[1])
+            0: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][15:0] == req_wr_data[15:0])
+            1: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]][31:16] == req_wr_data[15:0])
+          endcase
+        
+        end
+        
+          
+        `MEM_COUNT_WORD: `ASSERT(dut.r_mem[req_addr[`ADDR_W - 1:2]] == req_wr_data)
+      endcase
     end
 
     req_wr_en = 0;
@@ -99,7 +144,9 @@ module tb_memory_interface;
       req_addr = test_addr[i];
       req_count = test_count[i];
 
-      #(2 * CLK_PERIOD);
+      #(CLK_PERIOD);
+      $display("%x", dut.r_mem[req_addr[`ADDR_W - 1:2]]);
+      $display("%x", test_data[i]);
 
       `ASSERT(rd_data == test_data[i])
       `ASSERT(res_code == `MEM_CODE_READ)
@@ -114,19 +161,5 @@ module tb_memory_interface;
     clk = ~clk;
   end
 
-  memory_interface#(
-    .WORD_COUNT(WORD_COUNT)
-  ) u0(
-    .clk(clk),
-    .aresetn(aresetn),
-
-    .i_req_addr(req_addr),
-    .i_req_wr_data(req_wr_data),
-    .i_req_count(req_count),
-    .i_req_wr_en(req_wr_en),
-
-    .o_res_rd_data(rd_data),
-    .o_res_code(res_code)
-  );
 
 endmodule
