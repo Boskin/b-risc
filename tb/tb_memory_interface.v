@@ -14,25 +14,41 @@ module tb_memory_interface;
 
   localparam WORD_COUNT = 128;
   localparam TEST_DATA_SIZE = 64;
-
+  
+  // Clock and reset
   reg clk;
   reg aresetn;
 
+  /* Control signals to the memory interface */
+  // Address of memory request (for read or write)
   reg [`ADDR_W - 1:0] req_addr;
+  // Data to write (if write is enabled)
   reg [`WORD_W - 1:0] req_wr_data;
+  // Amount of data to be read (byte, half-word, or word)
   reg [`MEM_COUNT_W - 1:0] req_count;
+  // Write enable (if disabled, a read occurs instead, if enabled, no read)
   reg req_wr_en;
 
+  // Data read, if write is disabled
   wire [`WORD_W - 1:0] rd_data;
+  /* Response of the interface, will return errors for out-of-bound addresses,
+   * misaligned memory, etc. */
   wire [`MEM_CODE_W - 1:0] res_code;
 
+  // Array of test addresses
   reg [`ADDR_W - 1:0] test_addr [0:TEST_DATA_SIZE - 1];
+  // Array of test data amounts (for req_count signal)
   reg [`MEM_COUNT_W - 1:0] test_count [0:TEST_DATA_SIZE - 1];
+  // Array of test data to be written
   reg [`WORD_W - 1:0] test_data [0:TEST_DATA_SIZE - 1];
 
+  /* Test number printed in the console to give a reference of where an
+   * assertion failed */
   integer test_num;
+  // Iterator variable for generating test data/iterating for loops
   integer i;
   
+  // Memory interface instantiation
   memory_interface#(
     .WORD_COUNT(WORD_COUNT)
   ) dut(
@@ -49,9 +65,11 @@ module tb_memory_interface;
   );
 
   initial begin
+    // Initialize dump file and dump all of the signals
     $dumpfile("tb_memory_interface.vcd");
     $dumpvars;
 
+    // Initialize all signals
     clk = 0;
     aresetn = 0;
 
@@ -88,6 +106,7 @@ module tb_memory_interface;
     // Wait for the entire reset duration
     #(RESET_DURATION * CLK_PERIOD);
 
+    // Turn off the reset signal
     aresetn = 1;
 
     #(CLK_PERIOD);
@@ -180,6 +199,7 @@ module tb_memory_interface;
     $finish;
   end
 
+  // Clock generation
   always begin
     #(CLK_PERIOD / 2);
     clk = ~clk;
