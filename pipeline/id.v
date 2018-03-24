@@ -3,28 +3,42 @@
 `include "opcodes.vh"
 
 module id(
+  // Clock
   clk,
+  // Synchronous clear
   clr,
+  // Stall signal
   stall,
+  // Reset signal to the register file (asynchronous)
   rf_reset,
 
+  // Input PC
   i_pc,
+  // Input instruction
   i_instr,
 
+  // Input register write signals from the writeback stage
   i_wb_dest_en,
   i_wb_dest_reg,
   i_wb_dest_data,
 
+  // Ouput PC (no change)
   o_pc,
+  // Output instruction (no change)
   o_instr,
 
+  // ALU operation signal
   o_alu_op,
 
+  // 32-bit opperands for the ALU
   o_alu_data1,
   o_alu_data2,
+  // 32-bit sign-extended immediate value
   o_imm,
 
+  // What to write to the destination register
   o_dest_src,
+  // The actual destination register
   o_dest_reg
 );
 
@@ -47,6 +61,7 @@ module id(
   output [`ADDR_W - 1:0] o_pc;
   output [`INSTR_W - 1:0] o_instr;
 
+  // Pipeline registers to hold PC and instruction
   reg [`ADDR_W - 1:0] r_pc;
   reg [`INSTR_W - 1:0] r_instr;
 
@@ -78,18 +93,22 @@ module id(
     if(clr == 1) begin
       r_pc <= 0;
       r_instr <= 0;
+    // Only load the registers if not stalling
     end else if(stall == 0) begin
       r_pc <= i_pc;
       r_instr <= i_instr;
     end
   end
 
+  // The PC and instructions don't change
   assign o_pc = r_pc;
   assign o_instr = r_instr;
 
   // If stalling, use the preserved instruction
   assign s_instr = stall == 0 ? i_instr : r_instr;
 
+  /* Instruction decoder: determine ALU and memory signals based on
+   * instruction */
   id_decoder dec(
     .instr(s_instr),
 
@@ -106,14 +125,19 @@ module id(
     .clk(clk),
     .aresetn(rf_reset),
 
+    // Register numbers
     .rd_reg_a(s_reg1),
     .rd_reg_b(s_reg2),
 
+    // Register data read
     .rd_data_a(s_reg_data1),
     .rd_data_b(s_reg_data2),
 
+    // Register write enable
     .wr_en(i_wb_dest_en),
+    // Register number to write to
     .wr_reg(i_wb_dest_reg),
+    // Data to write
     .wr_data(i_wb_dest_data)
   );
 
