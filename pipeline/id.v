@@ -159,7 +159,7 @@ module id(
     case(s_alu_src_b)
       `ALU_SRC_B_XPR: o_alu_data_b = s_reg_data_b;
       `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
-      `ALU_SRC_B_INSTR_SIZE: o_alu_data2 = `INSTR_W;
+      `ALU_SRC_B_INSTR_SIZE: o_alu_data_b = `INSTR_W;
       default: o_alu_data_b = 0;
     endcase
   end
