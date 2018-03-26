@@ -30,7 +30,7 @@
 `define ITYPE_IMM12(instr) (instr[31:20])
 `define BTYPE_IMM12(instr) \
 ({instr[31], instr[7], instr[30:25], instr[11:8]})
-`define STYPE_IMM12(instr) ({instr[31:25, instr[11:7]})
+`define STYPE_IMM12(instr) ({instr[31:25], instr[11:7]})
 
 `define INSTR_XPR_A(instr) (instr[19:15])
 `define INSTR_XPR_B(instr) (instr[24:20])
