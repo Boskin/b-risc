@@ -82,16 +82,16 @@ module id(
   // Destination register write source (alu or memory)
   output [`DEST_SRC_W - 1:0] o_dest_src;
   output [`REG_IDX_W - 1:0] o_dest_reg;
-  assign o_dest_reg = `INSTR_XPR_DEST(instr);
+  assign o_dest_reg = `INSTR_XPR_DEST(s_instr);
 
   // Sources for the alu inputs (xpr, immediates, etc.)
   wire [`ALU_SRC_A_W - 1:0] s_alu_src_a;
   wire [`ALU_SRC_B_W - 1:0] s_alu_src_b;
 
   // Register indices and data
-  wire [`REG_IDX_W - 1:0] s_reg_a = `INSTR_XPR_A(instr);
+  wire [`REG_IDX_W - 1:0] s_reg_a = `INSTR_XPR_A(s_instr);
   wire [`WORD_W - 1:0] s_reg_data_a;
-  wire [`REG_IDX_W - 1:0] s_reg_b = `INSTR_XPR_B(instr);
+  wire [`REG_IDX_W - 1:0] s_reg_b = `INSTR_XPR_B(s_instr);
   wire [`WORD_W - 1:0] s_reg_data_b;
 
   always@(posedge clk) begin
@@ -110,7 +110,7 @@ module id(
   assign o_instr = r_instr;
 
   // If stalling, use the preserved instruction
-  assign s_instr = stall == 0 ? i_instr : r_instr;
+  assign s_instr = r_instr;// stall == 0 ? i_instr : r_instr;
 
   /* Instruction decoder: determine ALU and memory signals based on
    * instruction */

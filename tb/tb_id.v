@@ -58,8 +58,9 @@ module tb_id;
 
     i_instr = {12'hfff, 5'b00000, 3'b000, 5'b00001, 7'b0010011};
 
-    #(2 * CLK_PERIOD);
+    #(5 * CLK_PERIOD);
 
+    $display("%0x", i_instr);
     $display("%0x", alu_op);
     $display("%0d", $signed(imm));
     $display("%0d", $signed(dut.s_reg_data_a));
