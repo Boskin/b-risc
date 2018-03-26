@@ -1,5 +1,6 @@
 `include "config.vh"
 `include "alu_op.vh"
+`include "mem_codes.vh"
 `include "opcodes.vh"
 
 // This is a 100% combinational module; it decodes instructions
@@ -95,7 +96,7 @@ module id_decoder(
       end
 
       `OPCODE_STYPE_STORE: begin
-        imm = $signed(stype_imm12)
+        imm = $signed(stype_imm12);
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_IMM;
