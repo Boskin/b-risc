@@ -11,8 +11,8 @@ module ex(
 
   i_alu_op,
 
-  i_alu_data1,
-  i_alu_data2,
+  i_alu_data_a,
+  i_alu_data_b,
   i_imm,
 
   i_dest_src,
@@ -36,8 +36,8 @@ input [`INSTR_W - 1:0] i_instr;
 
 input [`ALU_OP_W - 1:0] i_alu_op;
 
-input [`WORD_W - 1:0] i_alu_data1;
-input [`WORD_W - 1:0] i_alu_data2;
+input [`WORD_W - 1:0] i_alu_data_a;
+input [`WORD_W - 1:0] i_alu_data_b;
 input [`WORD_W - 1:0] i_imm;
 
 input [`DEST_SRC_W - 1:0] i_dest_src;
@@ -48,8 +48,8 @@ reg [`INSTR_W - 1:0] r_instr;
 
 reg [`ALU_OP_W - 1:0] r_alu_op;
 
-reg [`WORD_W - 1:0] r_alu_data1;
-reg [`WORD_W - 1:0] r_alu_data2;
+reg [`WORD_W - 1:0] r_alu_data_a;
+reg [`WORD_W - 1:0] r_alu_data_b;
 reg [`WORD_W - 1:0] r_imm;
 
 reg [`DEST_SRC_W - 1:0] r_dest_src;
@@ -82,8 +82,8 @@ always@(posedge clk) begin
 
     r_alu_op <= `ALU_ADD;
 
-    r_alu_data1 <= 0;
-    r_alu_data2 <= 0;
+    r_alu_data_a <= 0;
+    r_alu_data_b <= 0;
     r_imm <= 0;
 
     r_dest_src <= `DEST_SRC_NONE;
@@ -94,8 +94,8 @@ always@(posedge clk) begin
 
     r_alu_op <= i_alu_op;
 
-    r_alu_data1 <= i_alu_data1;
-    r_alu_data2 <= i_alu_data2;
+    r_alu_data_a <= i_alu_data_a;
+    r_alu_data_b <= i_alu_data_b;
     r_imm <= i_imm;
 
     r_dest_src <= i_dest_src;
@@ -104,8 +104,8 @@ always@(posedge clk) begin
 end
 
 alu comp(
-  .opp_a(r_alu_data1),
-  .opp_b(r_alu_data2),
+  .opp_a(r_alu_data_a),
+  .opp_b(r_alu_data_b),
 
   .op(r_alu_op),
 
