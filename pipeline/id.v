@@ -31,8 +31,8 @@ module id(
   o_alu_op,
 
   // 32-bit opperands for the ALU
-  o_alu_data1,
-  o_alu_data2,
+  o_alu_data_a,
+  o_alu_data_b,
   // 32-bit sign-extended immediate value
   o_imm,
 
@@ -72,8 +72,8 @@ module id(
   output [`ALU_OP_W - 1:0] o_alu_op;
 
   // Data to be supplied to the ALU
-  output reg[`WORD_W - 1:0] o_alu_data1;
-  output reg[`WORD_W - 1:0] o_alu_data2;
+  output reg[`WORD_W - 1:0] o_alu_data_a;
+  output reg[`WORD_W - 1:0] o_alu_data_b;
   // Immediate signal
   output [`WORD_W - 1:0] o_imm;
 
@@ -89,10 +89,10 @@ module id(
   wire [`ALU_SRC_B_W - 1:0] s_alu_src_b;
 
   // Register indices and data
-  wire [`REG_IDX_W - 1:0] s_reg1 = `INSTR_XPR_A(instr);
-  wire [`WORD_W - 1:0] s_reg_data1;
-  wire [`REG_IDX_W - 1:0] s_reg2 = `INSTR_XPR_B(instr);
-  wire [`WORD_W - 1:0] s_reg_data2;
+  wire [`REG_IDX_W - 1:0] s_reg_a = `INSTR_XPR_A(instr);
+  wire [`WORD_W - 1:0] s_reg_data_a;
+  wire [`REG_IDX_W - 1:0] s_reg_b = `INSTR_XPR_B(instr);
+  wire [`WORD_W - 1:0] s_reg_data_b;
 
   always@(posedge clk) begin
     if(clr == 1) begin
@@ -133,12 +133,12 @@ module id(
     .aresetn(rf_reset),
 
     // Register numbers
-    .rd_reg_a(s_reg1),
-    .rd_reg_b(s_reg2),
+    .rd_reg_a(s_reg_a),
+    .rd_reg_b(s_reg_b),
 
     // Register data read
-    .rd_data_a(s_reg_data1),
-    .rd_data_b(s_reg_data2),
+    .rd_data_a(s_reg_data_a),
+    .rd_data_b(s_reg_data_b),
 
     // Register write enable
     .wr_en(i_wb_dest_en),
@@ -151,16 +151,16 @@ module id(
   // Determine the raw alu inputs
   always@(*) begin
     case(s_alu_src_a)
-      `ALU_SRC_A_XPR: o_alu_data1 = s_reg_data1;
-      `ALU_SRC_A_PC: o_alu_data1 = i_pc;
-      default: o_alu_data1 = 0;
+      `ALU_SRC_A_XPR: o_alu_data_a = s_reg_data_a;
+      `ALU_SRC_A_PC: o_alu_data_a = i_pc;
+      default: o_alu_data_a = 0;
     endcase
 
     case(s_alu_src_b)
-      `ALU_SRC_B_XPR: o_alu_data2 = s_reg_data2;
-      `ALU_SRC_B_IMM: o_alu_data2 = o_imm;
+      `ALU_SRC_B_XPR: o_alu_data_b = s_reg_data_b;
+      `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
       `ALU_SRC_B_INSTR_SIZE: o_alu_data2 = `INSTR_W;
-      default: o_alu_data2 = 0;
+      default: o_alu_data_b = 0;
     endcase
   end
 endmodule
