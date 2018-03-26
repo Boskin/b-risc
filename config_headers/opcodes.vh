@@ -8,12 +8,17 @@
 
 `define OPCODE_COMPLETE_RTYPE(instr) \
 ({`FUNCT7(instr), `FUNCT3(instr), `OPCODE(instr)})
+
 `define OPCODE_COMPLETE_ITYPE(instr) \
+({7'b0, `FUNCT3(instr), `OPCODE(instr)})
+
+`define OPCODE_COMPLETE_STYPE(instr) \
 ({7'b0, `FUNCT3(instr), `OPCODE(instr)})
 
 `define OPCODE_RTYPE (7'b0110011)
 `define OPCODE_ITYPE (7'b0010011)
-`define OPCODE_STYPE (7'b0100011)
+`define OPCODE_STYPE_STORE (7'b0100011)
+`define OPCODE_STYPE_LOAD (7'b0000011)
 // Load instructions (same format as i-type)
 `define OPCODE_LTYPE (7'b0000011)
 `define OPCODE_BYTPE (7'b1100011)
@@ -25,7 +30,7 @@
 `define ITYPE_IMM12(instr) (instr[31:20])
 `define BTYPE_IMM12(instr) \
 ({instr[31], instr[7], instr[30:25], instr[11:8]})
-`define STYPE_IMM5(instr) ({instr[31:25, instr[11:7]})
+`define STYPE_IMM12(instr) ({instr[31:25, instr[11:7]})
 
 `define INSTR_XPR_A(instr) (instr[19:15])
 `define INSTR_XPR_B(instr) (instr[24:20])
@@ -58,6 +63,10 @@
 `define FUNCT3_SRA (3'b101)
 `define FUNCT3_OR (3'b110)
 `define FUNCT3_AND (3'b111)
+
+`define FUNCT3_SB (3'b000)
+`define FUNCT3_SH (3'b001)
+`define FUNCT3_SW (3'b010)
 
 `define FUNCT7_ADD (7'b0000000)
 `define FUNCT7_SUB (7'b0100000)

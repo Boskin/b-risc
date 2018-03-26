@@ -36,6 +36,9 @@ module id(
   // 32-bit sign-extended immediate value
   o_imm,
 
+  // Memory operation to perform
+  o_mem_op,
+
   // What to write to the destination register
   o_dest_src,
   // The actual destination register
@@ -73,6 +76,8 @@ module id(
   output reg[`WORD_W - 1:0] o_alu_data2;
   // Immediate signal
   output [`WORD_W - 1:0] o_imm;
+
+  output [`MEM_OP_W - 1:0] o_mem_op;
 
   // Destination register write source (alu or memory)
   output [`DEST_SRC_W - 1:0] o_dest_src;
@@ -114,6 +119,8 @@ module id(
 
     .alu_op(o_alu_op),
     .imm(o_imm),
+
+    .mem_op(o_mem_op),
 
     .alu_a_src(s_alu_src_a),
     .alu_b_src(s_alu_src_b),

@@ -2,14 +2,24 @@
 `include "alu_op.vh"
 `include "opcodes.vh"
 
+// This is a 100% combinational module; it decodes instructions
 module id_decoder(
+  // Instruction to decode
   instr,
 
+  // ALU operation to perform
   alu_op,
+  // Immediate value of the instruction
   imm,
 
+  // Where to get the ALU inputs (registers, immediates, etc)
   alu_a_src,
   alu_b_src,
+
+  // Memory operation to perform
+  mem_op,
+
+  // What to write to the destination register (ALU output or memory read)
   dest_src
 );
 
@@ -24,6 +34,9 @@ module id_decoder(
 
   output reg [`ALU_SRC_A_W - 1:0] alu_a_src;
   output reg [`ALU_SRC_B_W - 1:0] alu_b_src;
+
+  output reg [`MEM_OP_W - 1:0] mem_op;
+
   output reg [`DEST_SRC_W - 1:0] dest_src;
 
   wire [6:0] opcode = `OPCODE(instr);
@@ -32,26 +45,34 @@ module id_decoder(
 
   wire [16:0] opcode_rtype = `OPCODE_COMPLETE_RTYPE(instr);
   wire [16:0] opcode_itype = `OPCODE_COMPLETE_ITYPE(instr);
+  wire [16:0] opcode_stype = `OPCODE_COMPLETE_STYPE(instr);
 
   reg [16:0] opcode_complete;
 
   wire [11:0] itype_imm12 = `ITYPE_IMM12(instr);
+  wire [11:0] stype_imm12 = `STYPE_IMM12(instr);
 
   always@(*) begin
     case(opcode)
       `OPCODE_RTYPE: opcode_complete = opcode_rtype;
       `OPCODE_ITYPE: opcode_complete = opcode_itype;
+      // Load and store instructions
+      `OPCODE_STYPE_LOAD: opcode_complete = opcode_stype;
+      `OPCODE_STYPE_STORE: opcode_complete = opcode_stype;
       default: opcode_complete = 0;
     endcase
   end
 
   always@(*) begin
+    // Some default control signals
+    mem_op = `MEM_OP_NOP;
     case(opcode)
       `OPCODE_RTYPE: begin
-        imm = 0;
+        imm = {`WORD_W{1'bx}};
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_XPR;
+        
         dest_src = `DEST_SRC_ALU;
       end
 
@@ -60,8 +81,36 @@ module id_decoder(
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_IMM;
+        
         dest_src = `DEST_SRC_ALU;
       end
+
+      `OPCODE_STYPE_LOAD: begin
+        imm = {`WORD_W{1'bx}};
+
+        alu_a_src = `ALU_SRC_A_XPR;
+        alu_b_src = `ALU_SRC_B_IMM;
+        
+        dest_src = `DEST_SRC_MEM;
+      end
+
+      `OPCODE_STYPE_STORE: begin
+        imm = $signed(stype_imm12)
+
+        alu_a_src = `ALU_SRC_A_XPR;
+        alu_b_src = `ALU_SRC_B_IMM;
+
+        dest_src = `DEST_SRC_NONE;
+
+        // Determine the memory operation
+        case(funct3)
+          `FUNCT3_SB: mem_op = `MEM_OP_WR_BYTE;
+          `FUNCT3_SH: mem_op = `MEM_OP_WR_HALF;
+          `FUNCT3_SW: mem_op = `MEM_OP_WR_WORD;
+          default: mem_op = `MEM_OP_NOP;
+        endcase
+      end
+
       default: begin
         imm = 0;
 

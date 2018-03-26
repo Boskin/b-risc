@@ -8,7 +8,7 @@
 `define MEM_OP_WR_HALF 2
 `define MEM_OP_WR_BYTE 3
 `define MEM_OP_RD_WORD 4
-`define MEM_OP_RD_HWORD 5
+`define MEM_OP_RD_HALF 5
 `define MEM_OP_RD_BYTE 6
 
 `define MEM_COUNT_W 2
