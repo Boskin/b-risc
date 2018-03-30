@@ -25,6 +25,10 @@ module tb_pipeline_id_ex;
   reg wb_clr;
   reg wb_stall;
 
+  wire wb_dest_en = 0;
+  wire [`REG_IDX_W - 1:0] wb_dest_reg = 0;
+  wire [`WORD_W - 1:0] wb_dest_data = 0;
+
   reg [`ADDR_W - 1:0] fe_pc;
   reg [`INSTR_W - 1:0] fe_instr;
 
@@ -76,7 +80,7 @@ module tb_pipeline_id_ex;
     .stall(ex_stall),
 
     .i_pc(id_pc),
-    .i_instr(ex_instr),
+    .i_instr(id_instr),
 
     .i_alu_op(id_alu_op),
 
@@ -97,6 +101,10 @@ module tb_pipeline_id_ex;
   );
 
   initial begin
+    // Initialize dump file and dump all of the signals
+    $dumpfile("tb_pipeline_id_ex.vcd");
+    $dumpvars;
+    
     clk = 0;
     rf_aresetn = 0;
     fe_clr = 1;
