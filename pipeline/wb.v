@@ -41,7 +41,7 @@ module wb(
   output [`REG_IDX_W - 1:0] o_dest_reg;
   output [`WORD_W - 1:0] o_dest_data;
 
-  assign o_dest_en = r_dest_src == DEST_SRC_ALU;
+  assign o_dest_en = r_dest_src == `DEST_SRC_ALU;
   assign o_dest_reg = r_dest_reg;
   assign o_dest_data = r_alu_eval;
 
