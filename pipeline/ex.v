@@ -1,4 +1,5 @@
 `include "config.vh"
+`include "mem_codes.vh"
 `include "alu_op.vh"
 
 module ex(
@@ -15,6 +16,8 @@ module ex(
   i_alu_data_b,
   i_imm,
 
+  i_mem_op,
+
   i_dest_src,
   i_dest_reg,
 
@@ -24,7 +27,12 @@ module ex(
   o_dest_src,
   o_dest_reg,
 
-  o_alu_eval
+  o_alu_eval,
+
+  o_mem_req_addr,
+  o_mem_req_wr_data,
+  o_mem_req_wr_en,
+  o_mem_req_count
 );
 
   input clk;
@@ -51,6 +59,8 @@ module ex(
   reg [`WORD_W - 1:0] r_alu_data_a;
   reg [`WORD_W - 1:0] r_alu_data_b;
   reg [`WORD_W - 1:0] r_imm;
+
+  reg [`MEM_OP_W - 1:0] r_mem_op;
 
   reg [`DEST_SRC_W - 1:0] r_dest_src;
   reg [`REG_IDX_W - 1:0] r_dest_reg;
@@ -85,6 +95,8 @@ module ex(
       r_alu_data_a <= 0;
       r_alu_data_b <= 0;
       r_imm <= 0;
+      
+      r_mem_op <= `MEM_OP_NOP;
 
       r_dest_src <= `DEST_SRC_NONE;
       r_dest_reg <= 0;
@@ -93,6 +105,8 @@ module ex(
       r_instr <= i_instr;
 
       r_alu_op <= i_alu_op;
+
+      r_mem_op <= i_mem_op;
 
       r_alu_data_a <= i_alu_data_a;
       r_alu_data_b <= i_alu_data_b;
@@ -112,5 +126,42 @@ module ex(
     .eval(s_alu_eval),
     .zero(s_alu_zero)
   );
+
+  assign o_mem_req_addr = s_alu_eval;
+  
+  // Figure out memory request signals based on memory operation
+  always@(*) begin
+    case(r_mem_op)
+      `MEM_OP_WR_WORD: begin
+        o_mem_req_count = `MEM_COUNT_WORD;
+        o_mem_req_wr_en = 1;
+      end
+
+      `MEM_OP_WR_HALF: begin
+        o_mem_req_count = `MEM_COUNT_HALF;
+        o_mem_req_wr_en = 1;
+      end
+
+      `MEM_OP_WR_BYTE: begin
+        o_mem_req_count = `MEM_COUNT_BYTE;
+        o_mem_req_wr_en = 1;
+      end
+
+      `MEM_OP_RD_WORD: begin
+        o_mem_req_count = `MEM_COUNT_WORD;
+        o_mem_req_wr_en = 0;
+      end
+
+      `MEM_OP_RD_HALF: begin
+        o_mem_req_count = `MEM_COUNT_HALF;
+        o_mem_req_wr_en = 0;
+      end
+
+      `MEM_OP_RD_BYTE: begin
+        o_mem_req_count = `MEM_COUNT_BYTE;
+        o_mem_req_wr_en = 0;
+      end
+    endcase
+  end
 
 endmodule
