@@ -25,9 +25,9 @@ module tb_pipeline_id_ex;
   reg wb_clr;
   reg wb_stall;
 
-  wire wb_dest_en = 0;
-  wire [`REG_IDX_W - 1:0] wb_dest_reg = 0;
-  wire [`WORD_W - 1:0] wb_dest_data = 0;
+  wire wb_dest_en;
+  wire [`REG_IDX_W - 1:0] wb_dest_reg;
+  wire [`WORD_W - 1:0] wb_dest_data;
 
   reg [`ADDR_W - 1:0] fe_pc;
   reg [`INSTR_W - 1:0] fe_instr;
@@ -100,6 +100,23 @@ module tb_pipeline_id_ex;
     .o_alu_eval(ex_alu_eval)
   );
 
+  wb p4(
+    .clk(clk),
+    .clr(wb_clr),
+
+    .i_pc(ex_pc),
+    .i_instr(ex_instr),
+
+    .i_dest_src(ex_dest_src),
+    .i_dest_reg(ex_dest_reg),
+
+    .i_alu_eval(ex_alu_eval),
+
+    .o_dest_en(wb_dest_en),
+    .o_dest_reg(wb_dest_reg),
+    .o_dest_data(wb_dest_data)
+  );
+
   initial begin
     // Initialize dump file and dump all of the signals
     $dumpfile("tb_pipeline_id_ex.vcd");
@@ -128,8 +145,17 @@ module tb_pipeline_id_ex;
     wb_clr = 0;
 
     fe_instr = {12'hfff, 5'b00000, `FUNCT3_ADD, 5'b00001, `OPCODE_ITYPE};
+    
+    #(CLK_PERIOD);
 
-    #(2 * CLK_PERIOD);
+    // NOP
+    fe_instr = {12'h000, 5'b00000, `FUNCT3_ADD, 5'b00000, `OPCODE_ITYPE};
+
+    #(CLK_PERIOD);
+
+    fe_instr = {12'h002, 5'b00001, `FUNCT3_ADD, 5'b00010, `OPCODE_ITYPE};
+
+    #(CLK_PERIOD * 5);
 
     $finish;
   end
