@@ -48,6 +48,8 @@ module ex(
   input [`WORD_W - 1:0] i_alu_data_b;
   input [`WORD_W - 1:0] i_imm;
 
+  input [`MEM_OP_W - 1:0] i_mem_op;
+
   input [`DEST_SRC_W - 1:0] i_dest_src;
   input [`REG_IDX_W - 1:0] i_dest_reg;
 
@@ -75,6 +77,11 @@ module ex(
   output [`REG_IDX_W - 1:0] o_dest_reg;
 
   output [`WORD_W - 1:0] o_alu_eval;
+
+  output [`ADDR_W - 1:0] o_mem_req_addr;
+  output [`WORD_W - 1:0] o_mem_req_wr_data;
+  output reg o_mem_req_wr_en;
+  output reg [`MEM_COUNT_W - 1:0] o_mem_req_count;
 
   // Outputs
   assign o_pc = r_pc;
@@ -159,6 +166,11 @@ module ex(
 
       `MEM_OP_RD_BYTE: begin
         o_mem_req_count = `MEM_COUNT_BYTE;
+        o_mem_req_wr_en = 0;
+      end
+
+      default: begin
+        o_mem_req_count = `MEM_COUNT_NONE;
         o_mem_req_wr_en = 0;
       end
     endcase

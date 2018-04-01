@@ -1,6 +1,7 @@
 `include "config.vh"
 `include "alu_op.vh"
 `include "opcodes.vh"
+`include "mem_codes.vh"
 
 module tb_pipeline_id_ex;
 
@@ -74,6 +75,10 @@ module tb_pipeline_id_ex;
   wire [`DEST_SRC_W - 1:0] ex_dest_src;
   wire [`REG_IDX_W - 1:0] ex_dest_reg;
   wire [`WORD_W - 1:0] ex_alu_eval;
+  wire [`ADDR_W - 1:0] ex_mem_req_addr;
+  wire [`WORD_W - 1:0] ex_mem_req_wr_data;
+  wire ex_mem_req_wr_en;
+  wire [`MEM_COUNT_W - 1:0] ex_mem_req_count;
   ex p2(
     .clk(clk),
     .clr(ex_clr),
@@ -97,20 +102,58 @@ module tb_pipeline_id_ex;
     .o_dest_src(ex_dest_src),
     .o_dest_reg(ex_dest_reg),
 
-    .o_alu_eval(ex_alu_eval)
+    .o_alu_eval(ex_alu_eval),
+
+    .o_mem_req_addr(ex_mem_req_addr),
+    .o_mem_req_wr_data(ex_mem_req_wr_data),
+    .o_mem_req_wr_en(ex_mem_req_wr_en),
+    .o_mem_req_count(ex_mem_req_count)
   );
 
-  wb p4(
+  wire [`ADDR_W - 1:0] me_pc;
+  wire [`INSTR_W - 1:0] me_instr;
+  wire [`DEST_SRC_W - 1:0] me_dest_src;
+  wire [`REG_IDX_W - 1:0] me_dest_reg;
+  wire [`WORD_W - 1:0] me_dest_data;
+  me p3(
     .clk(clk),
-    .clr(wb_clr),
+    .clr(me_clr),
+    .stall(me_stall),
 
     .i_pc(ex_pc),
     .i_instr(ex_instr),
-
+    
     .i_dest_src(ex_dest_src),
     .i_dest_reg(ex_dest_reg),
 
     .i_alu_eval(ex_alu_eval),
+    .i_mem_read(0),
+
+    .o_pc(me_pc),
+    .o_instr(me_instr),
+
+    .o_dest_src(me_dest_src),
+    .o_dest_reg(me_dest_reg),
+
+    .o_dest_data(me_dest_data)
+  );
+
+  wire [`ADDR_W - 1:0] wb_pc;
+  wire [`INSTR_W - 1:0] wb_instr;
+  wb p4(
+    .clk(clk),
+    .clr(wb_clr),
+
+    .i_pc(me_pc),
+    .i_instr(me_instr),
+
+    .i_dest_src(me_dest_src),
+    .i_dest_reg(me_dest_reg),
+
+    .i_dest_data(me_dest_data),
+
+    .o_pc(wb_pc),
+    .o_instr(wb_instr),
 
     .o_dest_en(wb_dest_en),
     .o_dest_reg(wb_dest_reg),

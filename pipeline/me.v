@@ -12,6 +12,7 @@ module me(
   i_dest_reg,
 
   i_alu_eval,
+  i_mem_read,
 
   o_pc,
   o_instr,
@@ -19,7 +20,7 @@ module me(
   o_dest_src,
   o_dest_reg,
 
-  o_alu_eval
+  o_dest_data
 );
   input clk;
   input clr;
@@ -32,6 +33,7 @@ module me(
   input [`REG_IDX_W - 1:0] i_dest_reg;
 
   input [`WORD_W - 1:0] i_alu_eval;
+  input [`WORD_W - 1:0] i_mem_read;
 
   reg [`ADDR_W - 1:0] r_pc;
   reg [`INSTR_W - 1:0] r_instr;
@@ -39,7 +41,8 @@ module me(
   reg [`DEST_SRC_W - 1:0] r_dest_src;
   reg [`REG_IDX_W - 1:0] r_dest_reg;
 
-  reg [`WORD_W -1:0] r_alu_eval;
+  reg [`WORD_W - 1:0] r_alu_eval;
+  reg [`WORD_W - 1:0] r_mem_read;
 
   output [`ADDR_W - 1:0] o_pc;
   output [`INSTR_W - 1:0] o_instr;
@@ -47,15 +50,13 @@ module me(
   output [`DEST_SRC_W - 1:0] o_dest_src;
   output [`REG_IDX_W - 1:0] o_dest_reg;
 
-  output [`WORD_W - 1:0] o_alu_eval;
+  output reg [`WORD_W - 1:0] o_dest_data;
 
   assign o_pc = r_pc;
   assign o_instr = r_instr;
 
   assign o_dest_src = r_dest_src;
   assign o_dest_reg = r_dest_reg;
-
-  assign o_alu_eval = r_alu_eval;
 
   always@(posedge clk) begin
     if(clr == 1) begin
@@ -66,7 +67,8 @@ module me(
       r_dest_reg <= 0;
 
       r_alu_eval <= 0;
-    end else if(stall != 0) begin
+      r_mem_read <= 0;
+    end else if(stall == 0) begin
       r_pc <= i_pc;
       r_instr <= i_instr;
 
@@ -74,7 +76,18 @@ module me(
       r_dest_reg <= i_dest_reg;
 
       r_alu_eval <= i_alu_eval;
+      r_mem_read <= i_mem_read;
     end
+  end
+
+  // Figure out what will be written to the register
+  always@(*) begin
+    case(r_dest_src)
+      `DEST_SRC_NONE: o_dest_data = 0;
+      `DEST_SRC_ALU: o_dest_data = r_alu_eval;
+      `DEST_SRC_MEM: o_dest_data = r_mem_read;
+      default: o_dest_data = 0;
+    endcase
   end
 
 endmodule

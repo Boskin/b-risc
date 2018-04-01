@@ -3,5 +3,6 @@ pipe_util/id_decoder.v
 pipe_util/alu.v
 pipeline/id.v
 pipeline/ex.v
+pipeline/me.v
 pipeline/wb.v
 tb/tb_pipeline_id_ex.v
