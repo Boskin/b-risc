@@ -1,8 +1,11 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
+// NOP machine instruction: addi x0, x0, 0
 `define NOP {12'h000, 5'd0, `FUNCT3_ADD, 5'd0, `OPCODE_ITYPE}
 
+/* Memory module that holds instructions; it retrieves them from the specified
+ * input text file; this should only be used in simulation */
 module instruction_memory(
   clk,
   aresetn,
@@ -59,7 +62,7 @@ module instruction_memory(
     if(word_addr < INSTR_MAX) begin
       o_res_data <= r_mem[word_addr];
     end else begin
-      o_res_data <= {12'h000, 5'd0, `FUNCT3_ADD, 5'd0, `OPCODE_ITYPE};
+      o_res_data <= `NOP;
     end
   end
 
