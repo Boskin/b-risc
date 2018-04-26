@@ -109,6 +109,21 @@ module tb_pipeline_id_ex;
     .o_mem_req_wr_en(ex_mem_req_wr_en),
     .o_mem_req_count(ex_mem_req_count)
   );
+  
+  wire [`WORD_W - 1:0] m1_mem_read;
+  wire [`MEM_CODE_W - 1:0]  m1_res_code;
+  memory_interface m1(
+    .clk(clk),
+    .aresetn(rf_aresetn),
+
+    .i_req_addr(ex_mem_req_addr),
+    .i_req_wr_data(ex_mem_req_wr_data),
+    .i_req_wr_en(ex_mem_req_wr_en),
+    .i_req_count(ex_mem_req_count),
+
+    .o_res_rd_data(m1_mem_read),
+    .o_res_code(m1_res_code)
+  );
 
   wire [`ADDR_W - 1:0] me_pc;
   wire [`INSTR_W - 1:0] me_instr;
@@ -127,7 +142,7 @@ module tb_pipeline_id_ex;
     .i_dest_reg(ex_dest_reg),
 
     .i_alu_eval(ex_alu_eval),
-    .i_mem_read(0),
+    .i_mem_read(m1_mem_read),
 
     .o_pc(me_pc),
     .o_instr(me_instr),
