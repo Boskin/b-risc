@@ -8,3 +8,6 @@
 *.vh~
 .gitignore~
 *~
+
+*.o
+tools/compiler/compiler
