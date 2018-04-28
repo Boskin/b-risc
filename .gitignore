@@ -3,11 +3,10 @@
 *.swp
 *.vcd
 
-*.un~
-*.v~
-*.vh~
 .gitignore~
 *~
+
+*.swo
 
 *.o
 tools/compiler/compiler
