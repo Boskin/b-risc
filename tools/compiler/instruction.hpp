@@ -25,6 +25,8 @@ protected:
     uint32_t opc;
 
 public:
+    static std::vector<std::string> tokenize_args(std::string instr);
+    
     static uint32_t reg_number(std::string reg_str);
 
     virtual uint32_t raw_binary(std::vector<std::string> args) const = 0;
