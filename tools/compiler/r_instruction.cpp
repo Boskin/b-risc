@@ -20,8 +20,8 @@ uint32_t Instruction_Handler_R::raw_binary(vector<string> args) const {
         (funct7 << FUNCT7_OFS);
 }
 
-Instruction_Handler_R::Instruction_Handler_R(uint32_t _opc) :
-    Instruction_Handler_Base(_opc) {}
+Instruction_Handler_R::Instruction_Handler_R(uint32_t funct3, uint32_t funct7) :
+    Instruction_Handler_Base((funct7 << 10) | (funct3 << 7) | (0x33)) {}
 
 Instruction_Handler_R::~Instruction_Handler_R() {}
 

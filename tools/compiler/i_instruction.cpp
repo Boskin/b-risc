@@ -3,8 +3,8 @@
 using std::vector;
 using std::string;
 
-Instruction_Handler_I::Instruction_Handler_I(uint32_t _opc) : 
-    Instruction_Handler_Base(_opc) {}
+Instruction_Handler_I::Instruction_Handler_I(uint32_t funct3, uint32_t opcode) :
+    Instruction_Handler_Base((funct3 << 7) | opcode) {}
 
 Instruction_Handler_I::~Instruction_Handler_I() {}
 
