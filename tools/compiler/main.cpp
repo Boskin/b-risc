@@ -24,12 +24,12 @@ int main() {
     handlers["and"] = new Instruction_Handler_R(0x7);
 
     // I type instruction hnadlers
-    handlers["addi"] = new Instruction_Handler_I(0, 0x13);
-    handlers["slti"] = new Instruction_Handler_I(0x2, 0x13);
-    handlers["sltiu"] = new Instruction_Handler_I(0x3, 0x13);
-    handlers["xori"] = new Instruction_Handler_I(0x4, 0x13);
-    handlers["ori"] = new Instruction_Handler_I(0x6, 0x13);
-    handlers["andi"] = new Instruction_Handler_I(0x7, 0x13);
+    handlers["addi"] = new Instruction_Handler_I(0);
+    handlers["slti"] = new Instruction_Handler_I(0x2);
+    handlers["sltiu"] = new Instruction_Handler_I(0x3);
+    handlers["xori"] = new Instruction_Handler_I(0x4);
+    handlers["ori"] = new Instruction_Handler_I(0x6);
+    handlers["andi"] = new Instruction_Handler_I(0x7);
     
     /* handlers["lb"] = new Instruction_Handler_I(0, 0x03);
     handlers["lh"] = new Instruction_Handler_I(0x1, 0x03);
