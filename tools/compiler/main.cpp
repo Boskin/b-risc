@@ -11,14 +11,31 @@ void load_instruction(std::vector<std::string>& code, const char* file);
 int main() {
     std::unordered_map<std::string, Instruction_Handler_Base*> handlers;
 
-    handlers["add"] = new Instruction_Handler_R(OPCODE(0, 0, 0x33));
-    handlers["sub"] = new Instruction_Handler_R(OPCODE(0x20, 0, 0x33));
-    handlers["sll"] = new Instruction_Handler_R(OPCODE(0, 0x1, 0x33));
-    handlers["slt"] = new Instruction_Handler_R(OPCODE(0, 0x2, 0x33));
-    handlers["sltu"] = new Instruction_Handler_R(OPCODE(0, 0x3, 0x33));
-    handlers["xor"] = new Instruction_Handler_R(OPCODE(0, 0x4, 0x33));
-    handlers["srl"] = new Instruction_Handler_R(OPCODE(0, 0x5, 0x33));
-    handlers["addi"] = new Instruction_Handler_I(OPCODE(0, 0, 0x13));
+    // R type instruction handlers
+    handlers["add"] = new Instruction_Handler_R(0);
+    handlers["sub"] = new Instruction_Handler_R(0, 0x20);
+    handlers["sll"] = new Instruction_Handler_R(0x1);
+    handlers["slt"] = new Instruction_Handler_R(0x2);
+    handlers["sltu"] = new Instruction_Handler_R(0x3);
+    handlers["xor"] = new Instruction_Handler_R(0x4);
+    handlers["srl"] = new Instruction_Handler_R(0x5);
+    handlers["sra"] = new Instruction_Handler_R(0x5, 0x20);
+    handlers["or"] = new Instruction_Handler_R(0x6);
+    handlers["and"] = new Instruction_Handler_R(0x7);
+
+    // I type instruction hnadlers
+    handlers["addi"] = new Instruction_Handler_I(0, 0x13);
+    handlers["slti"] = new Instruction_Handler_I(0x2, 0x13);
+    handlers["sltiu"] = new Instruction_Handler_I(0x3, 0x13);
+    handlers["xori"] = new Instruction_Handler_I(0x4, 0x13);
+    handlers["ori"] = new Instruction_Handler_I(0x6, 0x13);
+    handlers["andi"] = new Instruction_Handler_I(0x7, 0x13);
+    
+    /* handlers["lb"] = new Instruction_Handler_I(0, 0x03);
+    handlers["lh"] = new Instruction_Handler_I(0x1, 0x03);
+    handlers["lw"] = new Instruction_Handler_I(0x2, 0x03);
+    handlers["lbu"] = new Instruction_Handler_I(0x4, 0x03);
+    handlers["lhu"] = new Instruction_Handler_I(0x5, 0x03); */
 
     std::cout << "Welcome to the compiler that's still under construction!\n";
 
