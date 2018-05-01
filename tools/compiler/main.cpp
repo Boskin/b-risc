@@ -37,8 +37,6 @@ int main() {
     handlers["lbu"] = new Instruction_Handler_I(0x4, 0x03);
     handlers["lhu"] = new Instruction_Handler_I(0x5, 0x03); */
 
-    std::cout << "Welcome to the compiler that's still under construction!\n";
-
     std::vector<std::string> code;
 
     load_instruction(code, "program.txt");
