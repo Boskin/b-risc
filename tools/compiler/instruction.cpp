@@ -12,11 +12,13 @@ vector<string> Instruction_Handler_Base::tokenize_args(string instr) {
     strncpy(c_instr, instr.c_str(), instr.length());
     c_instr[instr.length()] = '\0';
 
-    char* c_token = strtok(c_instr, ", ");
+    const char* delimiters = "(), ";
+
+    char* c_token = strtok(c_instr, delimiters);
 
     while(c_token != NULL) {
         args.push_back(string(c_token));
-        c_token = strtok(NULL, ", ");
+        c_token = strtok(NULL, delimiters);
     }
 
     delete [] c_instr;
