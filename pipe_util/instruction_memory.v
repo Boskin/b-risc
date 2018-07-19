@@ -44,6 +44,9 @@ module instruction_memory(
        * is room; keep two empty spots for NOPs at the end */
       while(!$feof(instr_file) && i < INSTR_MAX - 2) begin
         fscanf_ret = $fscanf(instr_file, "%h\n", r_mem[i]);
+        if(fscanf_ret < 1) begin
+          r_mem[i] = `NOP;
+        end
         i = i + 1;
       end
 
