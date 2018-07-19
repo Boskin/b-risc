@@ -17,5 +17,6 @@ $(1).vvp: $$($(CMD_DIR)/$(1)_cmd)
 	@iverilog -c $(CMD_DIR)/$(1)_cmd -I config_headers -o $(1).vvp
 endef
 
-$(foreach tb,$(TB),$(eval $(tb)_cmd := $(shell cat $(CMD_DIR)/$(tb)_cmd)))
+# Use eval to create new make targets
+$(foreach tb,$(TB),$(eval $(CMD_DIR)/$(tb)_cmd := $(shell cat $(CMD_DIR)/$(tb)_cmd)))
 $(foreach tb,$(TB),$(eval $(call TB_template,$(tb))))
