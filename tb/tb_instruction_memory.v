@@ -24,6 +24,10 @@ module tb_instruction_memory;
       $display("%8h", dut.instruction_memory.r_mem[i]);
     end
 
+    req_addr = 0;
+    #(CLK_PERIOD);
+    $display("%8h", res_data);
+
     $finish;
   end
 
