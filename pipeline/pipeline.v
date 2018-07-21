@@ -3,6 +3,7 @@
 `include "opcodes.vh"
 `include "mem_codes.vh"
 
+// Full pipeline module
 module pipeline(
   clk,
   reset,
@@ -19,7 +20,20 @@ module pipeline(
   i_mem_res_rd_data,
   i_mem_res_code
 );
+  input clk;
+  input resetn;
+  input aresetn;
 
+  output [`ADDR_W - 1:0] o_instr_req_addr;
+  input [`WORD_W - 1:0] i_instr_res_data;
+  
+  output [`ADDR_W - 1:0] o_mem_req_addr;
+  output [`WORD_W - 1:0] o_mem_req_wr_data;
+  output o_mem_req_wr_en;
+  output [`MEM_COUNT_W - 1:0] o_mem_req_count;
+
+  input [`WORD_W - 1:0] i_mem_res_rd_data;
+  input [`MEM_CODE_W - 1:0] i_mem_res_code;
 
   wire fe_clr;
   wire fe_stall;
@@ -35,6 +49,19 @@ module pipeline(
   
   wire id_clr;
   wire id_stall;
+  wire [`ADDR_W - 1:0] id_pc;
+  wire [`INSTR_W - 1:0] id_instr;
+  wire [`ALU_OP_W - 1:0] id_alu_op;
+  wire [`WORD_W - 1:0] id_alu_data_a;
+  wire [`WORD_W - 1:0] id_alu_data_b;
+  wire [`WORD_W - 1:0] id_imm;
+  wire [`MEM_OP_W - 1:0] id_mem_op;
+  wire [`DEST_SRC_W - 1:0] id_dest_src;
+  wire [`REG_IDX_W - 1:0] id_dest_reg;
+
+  wire wb_dest_en;
+  wire [`REG_IDX_W - 1:0] wb_dest_reg;
+  wire [`WORD_W - 1:0] wb_dest_data;
   id p1(
     .clk(clk),
     .clr(id_clr),
@@ -45,7 +72,107 @@ module pipeline(
     .i_instr(i_instr_res_data),
 
     .i_wb_dest_en(wb_dest_en),
-    .i_wb_dest_reg(wb_dest_reg)
+    .i_wb_dest_reg(wb_dest_reg),
+    .i_wb_dest_data(wb_dest_data),
+
+    .o_pc(id_pc),
+    .o_instr(id_instr),
+    
+    .o_alu_op(id_alu_op),
+
+    .o_alu_data_a(id_alu_data_a),
+    .o_alu_data_b(id_alu_data_b),
+    .o_imm(id_imm),
+    
+    .o_mem_op(id_mem_op),
+
+    .o_dest_src(id_dest_src),
+    .o_dest_reg(id_dest_reg)
   );
+
+  wire [`ADDR_W - 1:0] ex_pc;
+  wire [`INSTR_W - 1:0] ex_instr;
+  wire [`DEST_SRC_W - 1:0] ex_dest_src;
+  wire [`REG_IDX_W - 1:0] ex_dest_reg;
+  wire [`WORD_W - 1:0] ex_alu_eval;
+  ex p2(
+    .clk(clk),
+    .clr(ex_clr),
+    .stall(ex_stall),
+    
+    .i_pc(id_pc),
+    .i_instr(id_instr),
+
+    .i_alu_op(id_alu_op),
+
+    .i_alu_data_a(id_alu_data_a),
+    .i_alu_data_b(id_alu_data_b),
+    .i_imm(id_imm),
+
+    .i_mem_op(id_mem_op),
+
+    .i_dest_src(id_dest_src),
+    .i_dest_reg(id_dest_reg),
+
+    .o_pc(ex_pc),
+    .o_instr(ex_instr),
+
+    .o_dest_src(ex_dest_src),
+    .o_dest_reg(ex_dest_reg),
+
+    .o_alu_eval(ex_alu_eval),
+
+    .o_mem_req_addr(o_mem_req_addr),
+    .o_mem_req_wr_data(o_mem_req_wr_data),
+    .o_mem_req_wr_en(o_mem_req_wr_en),
+    .o_mem_req_count(o_mem_req_count)
+  );
+
+  wire [`ADDR_W - 1:0] me_pc;
+  wire [`INSTR_W - 1:0] me_instr;
+  wire [`DEST_SRC_W - 1:0] me_dest_src;
+  wire [`REG_IDX_W - 1:0] me_dest_reg;
+  wire [`WORD_W - 1:0] me_dest_data;
+  me p3(
+    .clk(clk),
+    .clr(me_clr),
+    .stall(me_stall),
+
+    .i_pc(ex_pc),
+    .i_instr(ex_instr),
+
+    .i_dest_src(ex_dest_src),
+    .i_dest_reg(ex_dest_reg),
+
+    .i_alu_eval(ex_alu_eval),
+    .i_mem_read(i_mem_read),
+
+    .o_pc(me_pc),
+    .o_instr(me_instr),
+    
+    .o_dest_src(me_dest_src),
+    .o_dest_reg(me_dest_reg),
+
+    .o_dest_data(me_dest_data)
+  );
+
+  wb p4(
+    .clk(clk),
+    .clr(w_clr),
+    .stall(wb_stall)
+    
+    .i_pc(me_pc),
+    .i_instr(me_instr),
+
+    .i_dest_src(me_dest_src),
+    .i_dest_reg(me_dest_reg),
+    
+    .i_dest_data(me_dest_data),
+
+    .o_dest_en(wb_dest_en),
+    .o_dest_reg(wb_dest_reg),
+    .o_dest_data(wb_dest_data)
+  );
+
 
 endmodule
