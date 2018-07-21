@@ -18,13 +18,16 @@ module tb_instruction_memory;
   initial begin
     $dumpfile("tb_instruction_memory.vcd");
     $dumpvars;
-    
-    #(CLK_PERIOD);
+
+    $display("Printing instructions.");
     for(i = 0; i < INSTR_MAX; i = i + 1) begin
-      $display("%8h", dut.instruction_memory.r_mem[i]);
+      req_addr = {i, 2'b00};
+      #(CLK_PERIOD);
+      $display("%8h", res_data);
     end
 
-    req_addr = 0;
+    $display("Out of bounds test.");
+    req_addr = {INSTR_MAX, 2'b00};
     #(CLK_PERIOD);
     $display("%8h", res_data);
 
