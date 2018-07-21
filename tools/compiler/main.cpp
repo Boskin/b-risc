@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -54,7 +55,8 @@ int main() {
 
         Instruction_Handler_Base* h = handlers[instr];
         if(h != NULL) {
-            std::cout << h->raw_binary(*it) << '\n';
+            std::cout << std::setbase(16) << std::setw(8) << std::setfill('0') <<
+              h->raw_binary(*it) << '\n';
         }
     }
 
