@@ -1,7 +1,7 @@
 pipe_util/register_file.v
 pipe_util/id_decoder.v
-pipe_util/memory_interface.v
-pipe_util/instruction_memory.v
+memory_peripheral/memory_interface.v
+memory_peripheral/instruction_memory.v
 pipe_util/alu.v
 pipeline/id.v
 pipeline/ex.v
