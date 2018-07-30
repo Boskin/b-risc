@@ -1,0 +1,3 @@
+memory_peripheral/gpio_interface.v
+
+tb/tb_gpio_interface.v
