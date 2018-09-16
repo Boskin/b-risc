@@ -105,12 +105,14 @@ module memory_interface(
               1: o_res_rd_data[7:0] <= r_mem[s_addr_aligned][15:8];
               2: o_res_rd_data[7:0] <= r_mem[s_addr_aligned][23:16];
               3: o_res_rd_data[7:0] <= r_mem[s_addr_aligned][31:24];
+              default: o_res_rd_data <= 0;
             endcase
 
           `MEM_COUNT_HALF:
             case(s_offset)
               0: o_res_rd_data[15:0] <= r_mem[s_addr_aligned][15:0];
               2: o_res_rd_data[15:0] <= r_mem[s_addr_aligned][31:16];
+              default: o_res_rd_data <= 0;
             endcase
 
           `MEM_COUNT_WORD: o_res_rd_data <= r_mem[s_addr_aligned];
