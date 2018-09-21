@@ -1,4 +1,5 @@
 `include "config.vh"
+`include "mem_codes.vh"
 module readonly_registers(
   clk,
   aresetn,
@@ -44,9 +45,9 @@ module readonly_registers(
   always@(posedge clk, negedge aresetn) begin
     if(aresetn == 0) begin
       o_res_rd_data <= 0;
-      o_res_code <= `MEM_COUNT_INVALID;
+      o_res_code <= `MEM_CODE_INVALID;
     end else begin
-      if((i_req_count != `MEM_COUNT_NONE) begin
+      if(i_req_count != `MEM_COUNT_NONE) begin
         
         if((i_req_count == `MEM_COUNT_HALF && s_offset[0] != 0) ||
           (i_req_count == `MEM_COUNT_WORD && s_offset != 0)) begin
@@ -66,23 +67,26 @@ module readonly_registers(
 
           case(i_req_count)
             `MEM_COUNT_BYTE: begin
+              o_res_rd_data[31:8] <= 0;
               case(s_offset)
-                0: o_res_rd_data <= r_mem[s_addr_aligned][7:0];
-                1: o_res_rd_data <= r_mem[s_addr_aligned][15:8];
-                2: o_res_rd_data <= r_mem[s_addr_aligned][23:16];
-                3: o_res_rd_data <= r_mem[s_addr_aligned][31:24];
-                default: o_res_rd_data <= 0;
+                0: o_res_rd_data[7:0] <= mem[s_addr_aligned][7:0];
+                1: o_res_rd_data[7:0] <= mem[s_addr_aligned][15:8];
+                2: o_res_rd_data[7:0] <= mem[s_addr_aligned][23:16];
+                3: o_res_rd_data[7:0] <= mem[s_addr_aligned][31:24];
+                default: o_res_rd_data[7:0] <= 0;
               endcase
             end
           
             `MEM_COUNT_HALF: begin
+              o_res_rd_data[31:15] <= 0;
               case(s_offset[1])
-                0: o_res_rd_data <= r_mem[s_addr_aligned][15:0];
-                1: o_res_rd_data <= r_mem[s_addr_aligned][31:16];
-                default: o_res_rd_data <= 0;
+                0: o_res_rd_data[15:0] <= mem[s_addr_aligned][15:0];
+                1: o_res_rd_data[15:0] <= mem[s_addr_aligned][31:16];
+                default: o_res_rd_data[15:0] <= 0;
+              endcase
             end
 
-            `MEM_COUNT_WORD: o_res_rd_data <= r_mem[s_addr_aligned];
+            `MEM_COUNT_WORD: o_res_rd_data <= mem[s_addr_aligned];
 
             default: begin 
              o_res_rd_data <= 0;
