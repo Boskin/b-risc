@@ -1,5 +1,9 @@
 `include "config.vh"
 `include "mem_codes.vh"
+/* Module that provides a memory io interface to a set of registers. This
+ * module is meant to be used by a peripheral where the peripheral active
+ * modifies the i_registers memory in its own module. This module simply
+ * provides an interface for the processor to read the data in i_registers */
 module readonly_registers(
   clk,
   aresetn,
@@ -12,14 +16,14 @@ module readonly_registers(
   o_res_rd_data,
   o_res_code
 );
-  parameter WORD_COUNT = 1;
+  parameter ADDR_COUNT = 1;
   parameter ADDR_START = 0;
-  parameter ADDR_END = 1;
+  localparam ADDR_END = ADDR_COUNT + ADDR_START;
 
   input clk;
   input aresetn;
 
-  input [WORD_COUNT * `WORD_W - 1:0] i_registers;
+  input [ADDR_COUNT * `WORD_W - 1:0] i_registers;
 
   input [`ADDR_W - 1:0] i_req_addr;
   input [`MEM_COUNT_W - 1:0] i_req_count;
@@ -27,7 +31,7 @@ module readonly_registers(
   output reg [`WORD_W - 1:0] o_res_rd_data;
   output reg [`MEM_CODE_W - 1:0] o_res_code;
 
-  wire [`WORD_W - 1:0] mem [0:WORD_COUNT - 1];
+  wire [`WORD_W - 1:0] mem [0:ADDR_COUNT - 1];
 
   wire [`ADDR_W - 1:2] s_addr_aligned;
   assign s_addr_aligned = i_req_addr[`WORD_W - 1:2];
@@ -37,7 +41,7 @@ module readonly_registers(
 
   genvar i;
   generate
-    for(i = 0; i < WORD_COUNT; i = i + 1) begin: memory_remap
+    for(i = 0; i < ADDR_COUNT; i = i + 1) begin: memory_remap
       assign mem[i] = i_registers[(i + 1) * `WORD_W - 1:i * `WORD_W];
     end
   endgenerate
