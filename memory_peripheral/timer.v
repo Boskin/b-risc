@@ -1,6 +1,14 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
+/* Simple memory-mapped timer module that allows forward and backward
+ * counting as well as custom load values*/
+/* Memory map: 
+*  0: 
+*  1: 
+*  2: 
+*  3: 
+*  4: */
 module timer(
   clk,
   aresetn,
@@ -17,8 +25,10 @@ module timer(
 
   localparam RW_ADDR_START = ADDR_START;
   localparam RW_ADDR_COUNT = 3;
-  localparam RO_ADDR_START = RW_ADDR_START + RW_ADDR_COUNT;
+  localparam RW_ADDR_END = RW_ADDR_START + RW_ADDR_COUNT;
+  localparam RO_ADDR_START = RW_ADDR_END;
   localparam RO_ADDR_COUNT = 2;
+  localparam RO_ADDR_END = RO_ADDR_START + RO_ADDR_COUNT;
 
   input clk;
   input aresetn;
@@ -29,7 +39,7 @@ module timer(
   input [`MEM_COUNT_W - 1:0] i_req_count;
 
   output reg [`WORD_W - 1:0] o_res_rd_data;
-  output reg o_res_code;
+  output reg [`MEM_CODE_W - 1:0] o_res_code;
 
   // Reqd/write registers
   // Enables the counter
@@ -71,11 +81,13 @@ module timer(
 
   assign threshold_trigger = count == threshold && aresetn == 1;
   always@(posedge clk, negedge aresetn) begin
-    if (aresetn == 0) begin
+    if(aresetn == 0) begin
       count <= 0;
     end
-    if (en == 1) begin
-      if (backward == 0) begin
+    if(load == 1) begin
+      count <= load_val;
+    end else if(en == 1) begin
+      if(backward == 0) begin
         count <= count + 1;
       end else begin
         count <= count - 1;
@@ -121,13 +133,18 @@ module timer(
 
   /* Mux the responses from the different register modules by looking at the
    * request address */
+  wire [`WORD_W - 2 - 1:0] word_addr;
+  assign word_addr = i_req_addr[`WORD_W - 1:2];
   always@(*) begin: output_mux
-    if(i_req_addr >= RW_ADDR_START && i_req_addr < RO_ADDR_START) begin
+    if(word_addr >= RW_ADDR_START && word_addr < RW_ADDR_END) begin
       o_res_rd_data = s_rw_rd_data;
       o_res_code = s_rw_code;
-    end else begin
+    end else if(word_addr >= RO_ADDR_START && word_addr < RO_ADDR_END) begin
       o_res_rd_data = s_ro_rd_data;
       o_res_code = s_ro_code;
+    end else begin
+      o_res_rd_data = 'bz;
+      o_res_code = 'bz;
     end
   end
 endmodule
