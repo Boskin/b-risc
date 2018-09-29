@@ -15,9 +15,13 @@ module readwrite_registers(
 
   o_exposed_mem
 );
-  parameter ADDR_START = 0;
+  parameter [`ADDR_W - 1:0] ADDR_START = 0;
   parameter ADDR_COUNT = 1;
-  localparam ADDR_END = ADDR_START + ADDR_COUNT;
+  localparam [`ADDR_W - 1:0] ADDR_END = ADDR_START + ADDR_COUNT - 1;
+
+  localparam [`ADDR_W - 2 - 1:0] WORD_START = ADDR_START[`ADDR_W - 1:2];
+  localparam [`ADDR_W - 2 - 1:0] WORD_END = ADDR_END[`ADDR_W - 1:2];
+  localparam WORD_COUNT = $ceil(ADDR_COUNT / 4);
 
   input clk;
   input aresetn;
@@ -33,14 +37,14 @@ module readwrite_registers(
   wire [`WORD_W - 2 - 1:0] s_addr_aligned = i_req_addr[`WORD_W - 1:2];
   wire [1:0] s_offset = i_req_addr[1:0];
 
-  reg [`WORD_W - 1:0] r_mem [ADDR_COUNT - 1:0];
+  reg [`WORD_W - 1:0] r_mem [WORD_END:WORD_START];
 
   output [`WORD_W * ADDR_COUNT - 1:0] o_exposed_mem;
 
   genvar j;
   generate
-    for(j = 0; j < ADDR_COUNT; j = j + 1) begin: mem_assign
-      assign o_exposed_mem[`WORD_W * (j + 1) - 1:`WORD_W * j] = r_mem[j];
+    for(j = 0; j < WORD_COUNT; j = j + 1) begin: mem_assign
+      assign o_exposed_mem[`WORD_W * (j + 1) - 1:`WORD_W * j] = r_mem[j + WORD_START];
     end
   endgenerate
 
@@ -65,7 +69,7 @@ module readwrite_registers(
         o_res_code <= `MEM_CODE_MISALIGNED;
 
       // Make sure the address is within the bounds of the memory device
-      end else if(s_addr_aligned >= ADDR_END) begin
+      end else if(s_addr_aligned > ADDR_END) begin
         o_res_rd_data <= 0;
         o_res_code <= `MEM_CODE_OUT_OF_BOUNDS;
 

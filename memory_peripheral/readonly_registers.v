@@ -18,7 +18,11 @@ module readonly_registers(
 );
   parameter ADDR_COUNT = 1;
   parameter ADDR_START = 0;
-  localparam ADDR_END = ADDR_COUNT + ADDR_START;
+  localparam ADDR_END = ADDR_COUNT + ADDR_START - 1;
+
+  localparam [`ADDR_W - 2 - 1:0] WORD_START = ADDR_START[`ADDR_W - 1:2];
+  localparam [`ADDR_W - 2 - 1:0] WORD_END = ADDR_END[`ADDR_W - 1:2];
+  localparam WORD_COUNT = $ceil(ADDR_COUNT / 4);
 
   input clk;
   input aresetn;
@@ -31,10 +35,10 @@ module readonly_registers(
   output reg [`WORD_W - 1:0] o_res_rd_data;
   output reg [`MEM_CODE_W - 1:0] o_res_code;
 
-  wire [`WORD_W - 1:0] mem [0:ADDR_COUNT - 1];
+  wire [`WORD_W - 1:0] mem [ADDR_START:ADDR_END];
 
-  wire [`ADDR_W - 1:2] s_addr_aligned;
-  assign s_addr_aligned = i_req_addr[`WORD_W - 1:2];
+  wire [`ADDR_W - 2 - 1:0] s_addr_aligned;
+  assign s_addr_aligned = i_req_addr[`ADDR_W - 1:2];
 
   wire [1:0] s_offset;
   assign s_offset = i_req_addr[1:0];
@@ -42,7 +46,7 @@ module readonly_registers(
   genvar i;
   generate
     for(i = 0; i < ADDR_COUNT; i = i + 1) begin: memory_remap
-      assign mem[i] = i_registers[(i + 1) * `WORD_W - 1:i * `WORD_W];
+      assign mem[i + ADDR_START] = i_registers[(i + 1) * `WORD_W - 1:i * `WORD_W];
     end
   endgenerate
 
@@ -59,7 +63,7 @@ module readonly_registers(
           o_res_rd_data <= 0;
           o_res_code <= `MEM_CODE_MISALIGNED;
 
-        end else if(s_addr_aligned >= ADDR_END) begin
+        end else if(s_addr_aligned > ADDR_END) begin
           
           o_res_rd_data <= 0;
           o_res_code <= `MEM_CODE_MISALIGNED;
