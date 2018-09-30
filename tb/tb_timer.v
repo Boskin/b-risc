@@ -16,49 +16,95 @@ module tb_timer;
   wire [`WORD_W - 1:0] res_rd_data;
   wire [`MEM_CODE_W - 1:0] res_code;
 
+  task write_register;
+    input [`ADDR_W - 1:0] addr;
+    input [`WORD_W - 1:0] data;
+    input [`WORD_W - 1:0] wr_mask;
+    input [`MEM_COUNT_W - 1:0] count;
+
+    reg [`WORD_W - 1:0] temp;
+  begin
+    // If the mask is all 1's, there is no need to perform a read
+    if(wr_mask == {`WORD_W{1'b1}}) begin
+      req_addr = addr;
+      req_wr_data = data;
+      req_wr_en = 1;
+      req_count = count;
+    end else begin
+      req_addr = addr;
+      req_wr_en = 0;
+      req_count = count;
+
+      #CLK_PERIOD;
+
+      temp = res_rd_data;
+      temp = temp | (data & wr_mask);
+      temp = temp & ~(~data & wr_mask);
+      
+      req_wr_en = 1;
+      req_wr_data = temp;
+    end
+
+    #CLK_PERIOD;
+    
+    req_wr_en = 0;
+    req_count = `MEM_COUNT_NONE;
+  end
+  endtask
+
+  // Toggle bits of wr_mask at addr for one cycle
+  task toggle_bits;
+    input [`ADDR_W - 1:0] addr;
+    input [`WORD_W - 1:0] wr_mask;
+    input [`MEM_COUNT_W - 1:0] count;
+
+    reg [`WORD_W - 1:0] temp;
+  begin
+    req_addr = addr;
+    req_wr_en = 0;
+    req_count = count;
+
+    #CLK_PERIOD;
+
+    temp = res_rd_data;
+    temp = temp ^ wr_mask;
+
+    req_wr_en = 1;
+    req_wr_data = temp;
+
+    #CLK_PERIOD;
+
+    temp = temp ^ wr_mask;
+
+    req_wr_data = temp;
+
+    #CLK_PERIOD;
+
+    req_wr_en = 0;
+    req_count = `MEM_COUNT_NONE;
+  end
+  endtask
   // Task to start the timer
   // Task to end the timer
   // Task to read the timer count
-  // Task to make the timer count backwards
-  // Task to make the timer count forwards
+  // Task to set the counting direction
   // Task to load the specified timer value
   task load_value;
     input [`WORD_W - 1:0] load_val;
     reg [`WORD_W - 1:0] temp;
   begin
-    // Write to the load_val field
-    req_addr = `WORD_W'h8;
-    req_wr_data = load_val;
-    req_wr_en = 1;
-    req_count = `MEM_COUNT_WORD;
-    #CLK_PERIOD;
+    write_register(
+      `ADDR_W'h8,
+      load_val,
+      {`WORD_W{1'b1}},
+      `MEM_COUNT_WORD
+    );
 
-    // Read the entire contents of the byte the bit is in
-    req_addr = `WORD_W'h0;
-    req_wr_en = 0;
-    req_count = `MEM_COUNT_BYTE;
-    #CLK_PERIOD;
-
-    // Simply flip a bit
-    temp = res_rd_data;
-    temp[1] = 1;
-
-    req_wr_data = temp;
-    req_wr_en = 1;
-    #CLK_PERIOD;
-
-    req_wr_en = 0;
-    #CLK_PERIOD;
-
-    temp = res_rd_data;
-    temp[1] = 0;
-    
-    req_wr_data = temp;
-    req_wr_en = 1;
-    #CLK_PERIOD;
-
-    req_wr_en = 0;
-    req_count = `MEM_COUNT_NONE;
+    toggle_bits(
+      `ADDR_W'h0,
+      `WORD_W'h2,
+      `MEM_COUNT_BYTE
+    );
   end
   endtask
 
@@ -73,8 +119,9 @@ module tb_timer;
     aresetn = 1;
 
     load_value(
-      32'hdeadbeef // load_val
+      `WORD_W'hdeadbeef
     );
+
     #CLK_PERIOD;
     $finish();
   end
