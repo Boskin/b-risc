@@ -10,8 +10,8 @@ module tb_timer;
 
   reg [`ADDR_W - 1:0] req_addr;
   reg [`WORD_W - 1:0] req_wr_data;
-  reg req_wr_en;
-  reg [`MEM_COUNT_W - 1:0] req_count;
+  reg req_wr_en = 0;
+  reg [`MEM_COUNT_W - 1:0] req_count = `MEM_COUNT_NONE;
 
   wire [`WORD_W - 1:0] res_rd_data;
   wire [`MEM_CODE_W - 1:0] res_code;
@@ -27,7 +27,7 @@ module tb_timer;
     reg [`WORD_W - 1:0] temp;
   begin
     // Write to the load_val field
-    req_addr = `WORD_W'h4;
+    req_addr = `WORD_W'h8;
     req_wr_data = load_val;
     req_wr_en = 1;
     req_count = `MEM_COUNT_WORD;
@@ -58,19 +58,25 @@ module tb_timer;
     #CLK_PERIOD;
 
     req_wr_en = 0;
+    req_count = `MEM_COUNT_NONE;
   end
   endtask
 
+  integer i;
   initial begin
+    $dumpfile("tb_timer.vcd");
+    $dumpvars();
+    for(i = 0; i < 1; i = i + 1) begin
+      $dumpvars(0, dut.timer.rw_reg.readwrite_registers.r_mem[i]);
+    end
     #CLK_PERIOD;
     aresetn = 1;
 
     load_value(
       32'hdeadbeef // load_val
     );
-
-    req_addr = `ADDR_W'h4;
-
+    #CLK_PERIOD;
+    $finish();
   end
 
   always begin: clk_gen
