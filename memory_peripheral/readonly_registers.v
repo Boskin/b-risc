@@ -27,7 +27,7 @@ module readonly_registers(
   input clk;
   input aresetn;
 
-  input [ADDR_COUNT * `WORD_W - 1:0] i_registers;
+  input [WORD_COUNT * `WORD_W - 1:0] i_registers;
 
   input [`ADDR_W - 1:0] i_req_addr;
   input [`MEM_COUNT_W - 1:0] i_req_count;
@@ -45,7 +45,7 @@ module readonly_registers(
 
   genvar i;
   generate
-    for(i = 0; i < ADDR_COUNT; i = i + 1) begin: memory_remap
+    for(i = 0; i < WORD_COUNT; i = i + 1) begin: memory_remap
       assign mem[i + ADDR_START] = i_registers[(i + 1) * `WORD_W - 1:i * `WORD_W];
     end
   endgenerate

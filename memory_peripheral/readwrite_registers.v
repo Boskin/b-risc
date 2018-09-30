@@ -39,7 +39,7 @@ module readwrite_registers(
 
   reg [`WORD_W - 1:0] r_mem [WORD_END:WORD_START];
 
-  output [`WORD_W * ADDR_COUNT - 1:0] o_exposed_mem;
+  output [`WORD_W * WORD_COUNT - 1:0] o_exposed_mem;
 
   genvar j;
   generate
