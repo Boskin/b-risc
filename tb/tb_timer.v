@@ -1,6 +1,9 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
+`define ADDR_START (0)
+`define TMR_ADDR(offset) (`ADDR_START + (offset))
+
 module tb_timer;
   localparam CLK_HPERIOD = 5;
   localparam CLK_PERIOD = 2 * CLK_HPERIOD;
@@ -15,6 +18,9 @@ module tb_timer;
 
   wire [`WORD_W - 1:0] res_rd_data;
   wire [`MEM_CODE_W - 1:0] res_code;
+
+  wire threshold_trigger;
+  assign threshold_trigger = dut.timer.threshold_trigger;
 
   task write_register;
     input [`ADDR_W - 1:0] addr;
@@ -85,9 +91,54 @@ module tb_timer;
   end
   endtask
   // Task to start the timer
-  // Task to end the timer
+  task start_timer;
+  begin
+    write_register(
+      `TMR_ADDR(`ADDR_W'h0),
+      `WORD_W'h8,
+      `WORD_W'h8,
+      `MEM_COUNT_BYTE
+    );
+  end
+  endtask
+  // Task to stop the timer
+  task stop_timer;
+  begin
+    write_register(
+      `TMR_ADDR(`ADDR_W'h0),
+      `WORD_W'h0,
+      `WORD_W'h8,
+      `MEM_COUNT_BYTE
+    );
+  end
+  endtask
   // Task to read the timer count
+  task read_timer_count;
+    output reg [`WORD_W - 1:0] count;
+  begin
+    req_addr = `TMR_ADDR(`ADDR_W'h16);
+    req_count = `MEM_COUNT_WORD;
+    req_wr_en = 0;
+
+    #CLK_PERIOD;
+
+    count = res_rd_data;
+    req_count = `MEM_COUNT_NONE;
+    req_wr_en = 0;
+  end
+  endtask
   // Task to set the counting direction
+  task set_dir;
+    input backwards;
+  begin
+    write_register(
+      `TMR_ADDR(`ADDR_W'h0),
+      backwards << 2,
+      `WORD_W'h4,
+      `MEM_COUNT_BYTE
+    );
+  end
+  endtask
   // Task to load the specified timer value
   task load_value;
     input [`WORD_W - 1:0] load_val;
@@ -107,7 +158,32 @@ module tb_timer;
     );
   end
   endtask
+  // Set the threshold value
+  task set_threshold;
+    input [`WORD_W - 1:0] threshold;
+  begin
+    write_register(
+      `TMR_ADDR(`ADDR_W'h4),
+      threshold,
+      `WORD_W'hffffffff,
+      `MEM_COUNT_WORD
+    );
+  end
+  endtask
+  // Enable/disable trigger
+  task set_trigger_en;
+    input en;
+  begin
+    write_register(
+      `TMR_ADDR(`ADDR_W'h0),
+      en,
+      `WORD_W'h1,
+      `MEM_COUNT_BYTE
+    );
+  end
+  endtask
 
+  reg [`WORD_W - 1:0] timer_count;
   integer i;
   initial begin
     $dumpfile("tb_timer.vcd");
@@ -119,10 +195,37 @@ module tb_timer;
     aresetn = 1;
 
     load_value(
-      `WORD_W'hdeadbeef
+      `WORD_W'h10000000
     );
 
+    start_timer();
+
+    repeat(10) begin
+      #CLK_PERIOD;
+    end
+
+    stop_timer();
+
+    repeat(3) begin
+      #CLK_PERIOD;
+    end 
+
+    set_dir(1);
+
+    set_threshold(`WORD_W'h10000000);
+    set_trigger_en(1'b1);
+
+    start_timer();
+
+    wait(threshold_trigger == 1);
     #CLK_PERIOD;
+
+    set_dir(0);
+
+    repeat(5) begin
+      #CLK_PERIOD;
+    end
+
     $finish();
   end
 
@@ -132,7 +235,7 @@ module tb_timer;
   end
 
   timer#(
-    .ADDR_START(0)
+    .ADDR_START(`ADDR_START)
   ) dut(
     .clk(clk),
     .aresetn(aresetn),
