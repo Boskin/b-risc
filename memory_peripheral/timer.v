@@ -70,8 +70,8 @@ module timer(
 
   wire [RO_WORD_COUNT * `WORD_W - 1:0] s_readonly_data;
   assign s_readonly_data = {
-    count,
-    {(`WORD_W - 1){1'b0}}, threshold_trigger
+    count, // 16-19
+    {(`WORD_W - 1){1'b0}}, threshold_trigger // 12-15
   };
 
   wire [`WORD_W - 1:0] s_rw_rd_data;
@@ -80,7 +80,8 @@ module timer(
   wire [`WORD_W - 1:0] s_ro_rd_data;
   wire [`MEM_CODE_W - 1:0] s_ro_code;
 
-  assign threshold_trigger = count == threshold && aresetn == 1;
+  assign threshold_trigger = count == threshold && aresetn == 1 &&
+    threshold_en == 1;
   always@(posedge clk, negedge aresetn) begin
     if(aresetn == 0) begin
       count <= 0;
