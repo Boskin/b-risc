@@ -1,0 +1,6 @@
+memory_peripheral/readwrite_registers.v
+memory_peripheral/readonly_registers.v
+
+memory_peripheral/timer.v
+
+tb/tb_timer.v
