@@ -1,6 +1,3 @@
-`include "config.vh"
-`include "mem_codes.vh"
-
 /* Simple memory-mapped timer module that allows forward and backward
  * counting as well as custom load values*/
 /* Memory map: 
@@ -24,11 +21,13 @@ module timer(
   parameter [`ADDR_W - 1:0] ADDR_START = 0;
 
   localparam RW_ADDR_START = ADDR_START;
-  localparam RW_ADDR_COUNT = 3;
-  localparam RW_ADDR_END = RW_ADDR_START + RW_ADDR_COUNT;
+  localparam RW_ADDR_COUNT = 12;
+  localparam RW_ADDR_END = RW_ADDR_START + RW_ADDR_COUNT - 1;
+  localparam RW_WORD_COUNT = $ceil(RW_ADDR_COUNT / 4);
   localparam RO_ADDR_START = RW_ADDR_END;
-  localparam RO_ADDR_COUNT = 2;
-  localparam RO_ADDR_END = RO_ADDR_START + RO_ADDR_COUNT;
+  localparam RO_ADDR_COUNT = 8;
+  localparam RO_ADDR_END = RO_ADDR_START + RO_ADDR_COUNT - 1;
+  localparam RO_WORD_COUNT = $ceil(RO_ADDR_COUNT / 4);
 
   input clk;
   input aresetn;
@@ -54,20 +53,22 @@ module timer(
   wire [`WORD_W - 1:0] threshold;
   wire [`WORD_W - 1:0] load_val;
 
-  wire [RW_ADDR_COUNT * `WORD_W - 1:0] s_readwrite_data;
+  wire [RW_WORD_COUNT * `WORD_W - 1:0] s_readwrite_data;
   // Concatenate the data in this fashion for reads/writes from the processor
-  assign s_readwrite_data = {
-    load_val,
-    threshold,
-    {(`WORD_W - 4){1'b0}}, en, backward, load, threshold_en
-  };
+  assign load_val = s_readwrite_data[`WORD_W * 3 - 1:`WORD_W * 2];
+  assign threshold = s_readwrite_data[`WORD_W * 2 - 1:`WORD_W * 1];
+
+  assign threshold_en = s_readwrite_data[0];
+  assign load = s_readwrite_data[1];
+  assign backward = s_readwrite_data[2];
+  assign en = s_readwrite_data[3];
 
   // Readonly registers
   reg [`WORD_W - 1:0] count;
   // High if the count equals the threshold
   wire threshold_trigger;
 
-  wire [RO_ADDR_COUNT * `WORD_W - 1:0] s_readonly_data;
+  wire [RO_WORD_COUNT * `WORD_W - 1:0] s_readonly_data;
   assign s_readonly_data = {
     count,
     {(`WORD_W - 1){1'b0}}, threshold_trigger
@@ -83,14 +84,15 @@ module timer(
   always@(posedge clk, negedge aresetn) begin
     if(aresetn == 0) begin
       count <= 0;
-    end
-    if(load == 1) begin
-      count <= load_val;
-    end else if(en == 1) begin
-      if(backward == 0) begin
-        count <= count + 1;
-      end else begin
-        count <= count - 1;
+    end else begin
+      if(load == 1) begin
+        count <= load_val;
+      end else if(en == 1) begin
+        if(backward == 0) begin
+          count <= count + 1;
+        end else begin
+          count <= count - 1;
+        end
       end
     end
   end
@@ -136,10 +138,10 @@ module timer(
   wire [`WORD_W - 2 - 1:0] word_addr;
   assign word_addr = i_req_addr[`WORD_W - 1:2];
   always@(*) begin: output_mux
-    if(word_addr >= RW_ADDR_START && word_addr < RW_ADDR_END) begin
+    if(word_addr >= RW_ADDR_START && word_addr <= RW_ADDR_END) begin
       o_res_rd_data = s_rw_rd_data;
       o_res_code = s_rw_code;
-    end else if(word_addr >= RO_ADDR_START && word_addr < RO_ADDR_END) begin
+    end else if(word_addr >= RO_ADDR_START && word_addr <= RO_ADDR_END) begin
       o_res_rd_data = s_ro_rd_data;
       o_res_code = s_ro_code;
     end else begin
