@@ -1,13 +1,20 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
-`timescale 1ns/100ps
+`timescale 1ns/1ns
 
+/* Assert macro that acts like an if block, place code that reports the failed
+ * assertion in the block */
 `define ASSERT(cond) if (!(cond))
 
 module tb_gpio_interface;
   localparam CLK_HPERIOD = 5;
   localparam CLK_PERIOD = 2 * CLK_HPERIOD;
+
+  localparam ADDR_START = 0;
+  localparam BANK_COUNT = 4;
+
+  localparam GPIO_W = BANK_COUNT * 8;
 
   reg clk = 0;
   reg aresetn = 0;
@@ -19,6 +26,7 @@ module tb_gpio_interface;
 
   wire [`WORD_W - 1:0] res_rd_data;
   wire [`MEM_CODE_W - 1:0] res_code; 
+  wire [GPIO_W - 1:0] gpio_state;
 
   task test_reset_condition; begin
     req_count = `MEM_COUNT_WORD;
@@ -47,7 +55,11 @@ module tb_gpio_interface;
   end
   endtask
 
+  integer i;
   initial begin
+    $dumpfile("tb_gpio_interface.vcd");
+    $dumpvars();
+
     #(CLK_PERIOD);
     aresetn = 1;
     
@@ -67,7 +79,10 @@ module tb_gpio_interface;
     clk = ~clk;
   end
 
-  gpio_interface dut(
+  gpio_interface#(
+    .ADDR_START(ADDR_START),
+    .BANK_COUNT(BANK_COUNT)
+  ) dut(
     .clk(clk),
     .aresetn(aresetn),
 
@@ -77,7 +92,9 @@ module tb_gpio_interface;
     .i_req_count(req_count),
 
     .o_res_rd_data(res_rd_data),
-    .o_res_code(res_code)
+    .o_res_code(res_code),
+
+    .o_gpio_state(gpio_state)
   );
 
 endmodule
