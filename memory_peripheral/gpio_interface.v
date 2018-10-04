@@ -4,113 +4,90 @@
 // Simple memory interface for simulation purposes only
 module gpio_interface(
   // Clock and reset
-  input clk,
-  input aresetn,
+  clk,
+  aresetn,
 
   // Request address
-  input [`ADDR_W - 1:0] i_req_addr,
+  i_req_addr,
   // Data to write
-  input [`WORD_W - 1:0] i_req_wr_data,
+  i_req_wr_data,
   // Distinguishes between read and write
-  input i_req_wr_en,
+  i_req_wr_en,
   // How much to read/write (byte, half-word, word)
-  input [`MEM_COUNT_W - 1:0] i_req_count,
+  i_req_count,
 
   // Data read
-  output reg [`WORD_W - 1:0] o_res_rd_data,
+  o_res_rd_data,
   // Response
-  output reg [`MEM_CODE_W - 1:0] o_res_code
+  o_res_code,
+
+  // GPIO net so that it can be physically mapped at the top level
+  o_gpio_state
 );
+  /********************/
+  /* Input parameters */
+  /********************/
+  parameter ADDR_START = 0;
+  parameter BANK_COUNT = 1;
 
-  // Memory
-  reg [`WORD_W - 1:0] r_gpio;
+  
+  /*********************/
+  /* Helper parameters */
+  /*********************/
+  localparam ADDR_COUNT = BANK_COUNT;
+  localparam ADDR_END = ADDR_START + ADDR_COUNT - 1;
+  localparam GPIO_W = BANK_COUNT * 8;
 
-  // Word-aligned address and byte offset
-  wire [`ADDR_W - 2 - 1:0] s_addr_aligned;
-  wire [1:0] s_offset;
 
-  assign s_addr_aligned = i_req_addr[`ADDR_W - 1:2];
-  assign s_offset = i_req_addr[1:0];
+  /***************/
+  /* Input ports */
+  /***************/
+  input clk;
+  input aresetn;
 
-  integer i;
-  always@(posedge clk, negedge aresetn) begin
-    if(aresetn == 0) begin
+  input [`ADDR_W - 1:0] i_req_addr;
+  input [`WORD_W - 1:0] i_req_wr_data;
+  input i_req_wr_en;
+  input [`MEM_COUNT_W - 1:0] i_req_count;
 
-      r_gpio <= 0;
+  /****************/
+  /* Output ports */
+  /****************/
+  output reg [`WORD_W - 1:0] o_res_rd_data;
+  output reg [`MEM_CODE_W - 1:0] o_res_code;
 
-      o_res_rd_data <= 0;
-      o_res_code <= 0;
+  output [GPIO_W - 1:0] o_gpio_state;
 
-    // Check if a request was made
-    end else if(i_req_count != `MEM_COUNT_NONE) begin
-      // Memory alignment check
-      if((i_req_count == `MEM_COUNT_HALF && s_offset[0] != 0) ||
-        (i_req_count == `MEM_COUNT_WORD && s_offset != 0)) begin
+  // Outputs of the register bank
+  wire [`WORD_W - 1:0] s_res_rd_data;
+  wire [`MEM_CODE_W - 1:0] s_res_code;
 
-        o_res_rd_data <= 0;
-        o_res_code <= `MEM_CODE_MISALIGNED;
+  readwrite_registers#(
+    .ADDR_START(ADDR_START),
+    .ADDR_COUNT(ADDR_COUNT)
+  ) rw_reg(
+    .clk(clk),
+    .aresetn(aresetn),
 
-      // Check if write is enabled
-      end else if(i_req_wr_en == 1) begin
+    .i_req_addr(i_req_addr),
+    .i_req_wr_data(i_req_wr_data),
+    .i_req_wr_en(i_req_wr_en),
+    .i_req_count(i_req_count),
+    
+    .o_res_rd_data(s_res_rd_data),
+    .o_res_code(s_res_code),
+    
+    .o_exposed_mem(o_gpio_state)
+  );
 
-        o_res_rd_data <= 0;
-        o_res_code <= `MEM_CODE_WRITE;
-
-        // Write to the GPIO at the byte offset
-        case(i_req_count)
-          `MEM_COUNT_BYTE:
-            case(s_offset)
-              0: r_gpio[7:0] <= i_req_wr_data[7:0];
-              1: r_gpio[15:8] <= i_req_wr_data[7:0];
-              2: r_gpio[23:16] <= i_req_wr_data[7:0];
-              3: r_gpio[31:24] <= i_req_wr_data[7:0];
-            endcase
-
-          `MEM_COUNT_HALF:
-            case(s_offset)
-              0: r_gpio[15:0] <= i_req_wr_data[15:0];
-              2: r_gpio[31:16] <= i_req_wr_data[15:0];
-            endcase
-
-          `MEM_COUNT_WORD: r_gpio <= i_req_wr_data;
-
-          default: o_res_code <= `MEM_CODE_INVALID;
-        endcase
-
-      end else begin
-
-        // By default, set the read data to 0 and the return code, read valid
-        o_res_rd_data <= 0;
-        o_res_code <= `MEM_CODE_READ;
-
-        // Read the GPIO at the byte offset
-        case(i_req_count)
-          `MEM_COUNT_BYTE:
-            case(s_offset)
-              0: o_res_rd_data[7:0] <= r_gpio[7:0];
-              1: o_res_rd_data[7:0] <= r_gpio[15:8];
-              2: o_res_rd_data[7:0] <= r_gpio[23:16];
-              3: o_res_rd_data[7:0] <= r_gpio[31:24];
-            endcase
-
-          `MEM_COUNT_HALF:
-            case(s_offset[1])
-              0: o_res_rd_data[15:0] <= r_gpio[15:0];
-              1: o_res_rd_data[15:0] <= r_gpio[31:16];
-            endcase
-
-          `MEM_COUNT_WORD: o_res_rd_data <= r_gpio;
-
-          default: o_res_code <= `MEM_CODE_INVALID;
-        endcase
-
-      end
-    // No request was made, so do nothing
+  // If the request address isn't intended for this device, output HiZ
+  always@(*) begin
+    if(i_req_addr >= ADDR_START && i_req_addr <= ADDR_END) begin
+      o_res_rd_data = s_res_rd_data;
+      o_res_code = s_res_code;
     end else begin
-
-      o_res_rd_data <= 0;
-      o_res_code <= `MEM_CODE_INVALID;
-
+      o_res_rd_data = 'bz;
+      o_res_code = 'bz;
     end
   end
 
