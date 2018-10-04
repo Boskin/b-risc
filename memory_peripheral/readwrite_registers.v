@@ -1,6 +1,8 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
+/* Generic register bank that can be used to implement small RAMs and CSRs for
+ * memory-mapped peripherals */
 module readwrite_registers(
   clk,
   aresetn,
@@ -15,14 +17,26 @@ module readwrite_registers(
 
   o_exposed_mem
 );
+  /********************/
+  /* Input parameters */
+  /********************/
   parameter [`ADDR_W - 1:0] ADDR_START = 0;
   parameter ADDR_COUNT = 1;
+
+
+  /***************************/
+  /* Helper local parameters */
+  /***************************/
   localparam [`ADDR_W - 1:0] ADDR_END = ADDR_START + ADDR_COUNT - 1;
 
   localparam [`ADDR_W - 2 - 1:0] WORD_START = ADDR_START[`ADDR_W - 1:2];
   localparam [`ADDR_W - 2 - 1:0] WORD_END = ADDR_END[`ADDR_W - 1:2];
   localparam WORD_COUNT = $ceil(ADDR_COUNT / 4);
 
+
+  /***************/
+  /* Input ports */
+  /***************/
   input clk;
   input aresetn;
 
@@ -31,16 +45,26 @@ module readwrite_registers(
   input i_req_wr_en;
   input [`MEM_COUNT_W - 1:0] i_req_count;
 
+
+  /****************/
+  /* Output ports */
+  /****************/
   output reg [`WORD_W - 1:0] o_res_rd_data;
   output reg [`MEM_CODE_W - 1:0] o_res_code;
-
-  wire [`WORD_W - 2 - 1:0] s_addr_aligned = i_req_addr[`WORD_W - 1:2];
-  wire [1:0] s_offset = i_req_addr[1:0];
-
-  reg [`WORD_W - 1:0] r_mem [WORD_END:WORD_START];
-
   output [`WORD_W * WORD_COUNT - 1:0] o_exposed_mem;
 
+  // Word address
+  wire [`WORD_W - 2 - 1:0] s_addr_aligned = i_req_addr[`WORD_W - 1:2];
+  // Offset of the word address
+  wire [1:0] s_offset = i_req_addr[1:0];
+
+  // Memory word array
+  reg [`WORD_W - 1:0] r_mem [WORD_END:WORD_START];
+
+
+  /*********************************************************************/
+  /* Memory output assignment: map the array of words to a long vector */
+  /*********************************************************************/
   genvar j;
   generate
     for(j = 0; j < WORD_COUNT; j = j + 1) begin: mem_assign
@@ -48,6 +72,10 @@ module readwrite_registers(
     end
   endgenerate
 
+
+  /****************/
+  /* Memory logic */
+  /****************/
   integer i;
   always@(posedge clk, negedge aresetn) begin
     if(aresetn == 0) begin
