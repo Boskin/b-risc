@@ -16,14 +16,25 @@ module readonly_registers(
   o_res_rd_data,
   o_res_code
 );
-  parameter ADDR_COUNT = 1;
+  /********************/
+  /* Input parameters */
+  /********************/
+  parameter WORD_COUNT = 1;
   parameter ADDR_START = 0;
+
+  /********************/
+  /* Local parameters */
+  /********************/
+  localparam integer ADDR_COUNT = WORD_COUNT * `WORD_W / 8;
   localparam ADDR_END = ADDR_COUNT + ADDR_START - 1;
 
   localparam [`ADDR_W - 2 - 1:0] WORD_START = ADDR_START[`ADDR_W - 1:2];
   localparam [`ADDR_W - 2 - 1:0] WORD_END = ADDR_END[`ADDR_W - 1:2];
-  localparam WORD_COUNT = $ceil(ADDR_COUNT / 4);
 
+
+  /***************/
+  /* Input ports */
+  /***************/
   input clk;
   input aresetn;
 
@@ -32,9 +43,17 @@ module readonly_registers(
   input [`ADDR_W - 1:0] i_req_addr;
   input [`MEM_COUNT_W - 1:0] i_req_count;
 
+
+  /****************/
+  /* Output ports */
+  /****************/
   output reg [`WORD_W - 1:0] o_res_rd_data;
   output reg [`MEM_CODE_W - 1:0] o_res_code;
 
+
+  /********************/
+  /* Internal signals */
+  /********************/
   wire [`WORD_W - 1:0] mem [ADDR_START:ADDR_END];
 
   wire [`ADDR_W - 2 - 1:0] s_addr_aligned;

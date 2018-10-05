@@ -34,9 +34,11 @@ module gpio_interface(
   /*********************/
   /* Helper parameters */
   /*********************/
-  localparam ADDR_COUNT = BANK_COUNT;
+  localparam WORD_COUNT = BANK_COUNT;
+  localparam ADDR_COUNT = WORD_COUNT * `WORD_W / 8;
   localparam ADDR_END = ADDR_START + ADDR_COUNT - 1;
-  localparam GPIO_W = BANK_COUNT * 8;
+  localparam real R_ADDR_COUNT = ADDR_COUNT;
+  localparam GPIO_W = WORD_COUNT * `WORD_W;
 
 
   /***************/
@@ -64,7 +66,7 @@ module gpio_interface(
 
   readwrite_registers#(
     .ADDR_START(ADDR_START),
-    .ADDR_COUNT(ADDR_COUNT)
+    .WORD_COUNT(WORD_COUNT)
   ) rw_reg(
     .clk(clk),
     .aresetn(aresetn),

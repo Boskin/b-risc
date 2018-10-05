@@ -101,7 +101,7 @@ module timer(
   // Bank of read/write registers
   readwrite_registers#(
     .ADDR_START(RW_ADDR_START),
-    .ADDR_COUNT(RW_ADDR_COUNT)
+    .WORD_COUNT(RW_WORD_COUNT)
   ) rw_reg(
     .clk(clk),
     .aresetn(aresetn),
@@ -120,7 +120,7 @@ module timer(
   // Bank of readonly registers
   readonly_registers#(
     .ADDR_START(RO_ADDR_START),
-    .ADDR_COUNT(RO_ADDR_COUNT)
+    .WORD_COUNT(RO_WORD_COUNT)
   ) ro_reg(
     .clk(clk),
     .aresetn(aresetn),

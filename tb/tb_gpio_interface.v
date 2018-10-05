@@ -1,8 +1,6 @@
 `include "config.vh"
 `include "mem_codes.vh"
 
-`timescale 1ns/1ns
-
 /* Assert macro that acts like an if block, place code that reports the failed
  * assertion in the block */
 `define ASSERT(cond) if (!(cond))
@@ -12,9 +10,9 @@ module tb_gpio_interface;
   localparam CLK_PERIOD = 2 * CLK_HPERIOD;
 
   localparam ADDR_START = 0;
-  localparam BANK_COUNT = 4;
+  localparam BANK_COUNT = 1;
 
-  localparam GPIO_W = BANK_COUNT * 8;
+  localparam GPIO_W = BANK_COUNT *  `WORD_W;
 
   reg clk = 0;
   reg aresetn = 0;
@@ -59,6 +57,7 @@ module tb_gpio_interface;
   initial begin
     $dumpfile("tb_gpio_interface.vcd");
     $dumpvars();
+    $display("%d", $ceil(BANK_COUNT / 4));
 
     #(CLK_PERIOD);
     aresetn = 1;

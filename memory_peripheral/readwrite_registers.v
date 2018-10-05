@@ -21,17 +21,16 @@ module readwrite_registers(
   /* Input parameters */
   /********************/
   parameter [`ADDR_W - 1:0] ADDR_START = 0;
-  parameter ADDR_COUNT = 1;
+  parameter WORD_COUNT = 1;
 
 
   /***************************/
   /* Helper local parameters */
   /***************************/
+  localparam ADDR_COUNT = WORD_COUNT * `WORD_W / 8;
   localparam [`ADDR_W - 1:0] ADDR_END = ADDR_START + ADDR_COUNT - 1;
-
   localparam [`ADDR_W - 2 - 1:0] WORD_START = ADDR_START[`ADDR_W - 1:2];
   localparam [`ADDR_W - 2 - 1:0] WORD_END = ADDR_END[`ADDR_W - 1:2];
-  localparam WORD_COUNT = $ceil(ADDR_COUNT / 4);
 
 
   /***************/
