@@ -17,9 +17,15 @@ module id(
   // Input instruction
   i_instr,
 
+  // EX stage signals for forwarding
   i_ex_alu_eval,
   i_ex_dest_reg,
   i_ex_dest_src,
+
+  // ME stage signals for forwarding
+  i_me_dest_reg,
+  i_me_dest_src,
+  i_me_dest_data,
 
   // Input register write signals from the writeback stage
   i_wb_dest_en,
@@ -60,6 +66,14 @@ module id(
   input [`INSTR_W - 1:0] i_instr;
 
   wire [`INSTR_W - 1:0] s_instr;
+
+  input [`REG_IDX_W - 1:0] i_ex_dest_reg;
+  input [`DEST_SRC_W - 1:0] i_ex_dest_src;
+  input [`WORD_W - 1:0] i_ex_alu_eval;
+
+  input [`REG_IDX_W - 1:0] i_me_dest_reg;
+  input [`DEST_SRC_W - 1:0] i_me_dest_src;
+  input [`WORD_W - 1:0] i_me_dest_data;
 
   // Signals from write-back stage
   input i_wb_dest_en;
@@ -162,22 +176,41 @@ module id(
     .wr_data(i_wb_dest_data)
   );
 
+  // Detect forwardable data hazards and route the data
+  function [`WORD_W - 1:0] fwd_alu_data;
+    input [`REG_IDX_W - 1:0] reg_num;
+  begin
+    if(reg_num == i_ex_dest_reg && i_ex_dest_src == `DEST_SRC_ALU) begin
+      fwd_alu_data = i_ex_alu_eval;
+    end else if(reg_num == i_me_dest_reg && i_me_dest_src != `DEST_SRC_NONE) begin
+      fwd_alu_data = i_me_dest_data;
+    end else if(reg_num == i_wb_dest_reg && i_wb_dest_en == 1) begin
+      fwd_alu_data = i_wb_dest_data;
+    end else begin
+      fwd_alu_data = 0;
+    end
+  end
+  endfunction
+
+  // Detect an unfowardable memory hazard to stall the pipeline
+  function mem_hazard_stall;
+    input [`REG_IDX_W - 1:0] reg_num;
+  begin
+    if(reg_num == i_ex_dest_reg && i_ex_dest_src == `DEST_SRC_MEM) begin
+      mem_hazard_stall = 1;
+    end else begin
+      mem_hazard_stall = 0;
+    end
+  end
+  endfunction
+
   // Determine the raw alu inputs
   always@(*) begin
     s_mem_hazard_reg_a = 0;
     case(s_alu_src_a)
       `ALU_SRC_A_XPR: begin
-        if(i_ex_dest_reg == s_reg_a && i_ex_dest_src == `DEST_SRC_ALU) begin
-          o_alu_data_a = i_ex_alu_eval;
-        end else if(i_ex_dest_reg == s_reg_a && i_ex_dest_src == `DEST_SRC_MEM) begin
-          o_alu_data_a = 0;
-          // Stall logic
-          s_mem_hazard_reg_a = 1;
-        end else if(i_me_dest_reg == s_reg_a && i_me_dest_src == `DEST_SRC_MEM) begin
-          o_alu_data_a = i_me_mem_read;
-        end else begin
-          o_alu_data_a = s_reg_data_a;
-        end
+        o_alu_data_a = fwd_alu_data(s_reg_a);
+        s_mem_hazard_reg_a = mem_hazard_stall(s_reg_a);
       end
       `ALU_SRC_A_PC: o_alu_data_a = i_pc;
       default: o_alu_data_a = 0;
@@ -186,17 +219,8 @@ module id(
     s_mem_hazard_reg_b = 0;
     case(s_alu_src_b)
       `ALU_SRC_B_XPR: begin
-        if(i_ex_dest_reg == s_reg_b && i_ex_dest_src == `DEST_SRC_ALU) begin
-          o_alu_data_b = i_ex_alu_eval;
-        end else if(i_ex_dest_reg == s_reg_b && i_ex_dest_src == `DEST_SRC_MEM) begin
-          o_alu_data_b = 0;
-          // Stall indicator
-          s_mem_hazard_reg_b = 1;
-        end else if(i_me_dest_reg == s_reg_b && i_me_dest_src == `DEST_SRC_MEM) begin
-          o_alu_data_b = i_me_mem_read;
-        end else begin
-          o_alu_data_b = s_reg_data_b;
-        end
+        o_alu_data_b = fwd_alu_data(s_reg_b);
+        s_mem_hazard_reg_b = mem_hazard_stall(s_reg_b);
       end
       `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
       `ALU_SRC_B_INSTR_SIZE: o_alu_data_b = `INSTR_W;
