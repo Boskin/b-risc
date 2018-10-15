@@ -17,6 +17,10 @@ module id(
   // Input instruction
   i_instr,
 
+  i_ex_alu_eval,
+  i_ex_dest_reg,
+  i_ex_dest_src,
+
   // Input register write signals from the writeback stage
   i_wb_dest_en,
   i_wb_dest_reg,
@@ -42,7 +46,9 @@ module id(
   // What to write to the destination register
   o_dest_src,
   // The actual destination register
-  o_dest_reg
+  o_dest_reg,
+
+  o_mem_hazard
 );
 
   input clk;
@@ -84,6 +90,8 @@ module id(
   output [`REG_IDX_W - 1:0] o_dest_reg;
   assign o_dest_reg = `INSTR_XPR_DEST(s_instr);
 
+  output o_mem_hazard;
+
   // Sources for the alu inputs (xpr, immediates, etc.)
   wire [`ALU_SRC_A_W - 1:0] s_alu_src_a;
   wire [`ALU_SRC_B_W - 1:0] s_alu_src_b;
@@ -93,6 +101,9 @@ module id(
   wire [`WORD_W - 1:0] s_reg_data_a;
   wire [`REG_IDX_W - 1:0] s_reg_b = `INSTR_XPR_B(s_instr);
   wire [`WORD_W - 1:0] s_reg_data_b;
+
+  reg s_mem_hazard_reg_a;
+  reg s_mem_hazard_reg_b;
 
   always@(posedge clk) begin
     if(clr == 1) begin
@@ -111,6 +122,9 @@ module id(
 
   // If stalling, use the preserved instruction
   assign s_instr = r_instr;// stall == 0 ? i_instr : r_instr;
+
+  // If either register has a memory hazard, a memory hazard happened
+  assign o_mem_hazard = s_mem_hazard_reg_a | s_mem_hazard_reg_b;
 
   /* Instruction decoder: determine ALU and memory signals based on
    * instruction */
@@ -150,14 +164,40 @@ module id(
 
   // Determine the raw alu inputs
   always@(*) begin
+    s_mem_hazard_reg_a = 0;
     case(s_alu_src_a)
-      `ALU_SRC_A_XPR: o_alu_data_a = s_reg_data_a;
+      `ALU_SRC_A_XPR: begin
+        if(i_ex_dest_reg == s_reg_a && i_ex_dest_src == `DEST_SRC_ALU) begin
+          o_alu_data_a = i_ex_alu_eval;
+        end else if(i_ex_dest_reg == s_reg_a && i_ex_dest_src == `DEST_SRC_MEM) begin
+          o_alu_data_a = 0;
+          // Stall logic
+          s_mem_hazard_reg_a = 1;
+        end else if(i_me_dest_reg == s_reg_a && i_me_dest_src == `DEST_SRC_MEM) begin
+          o_alu_data_a = i_me_mem_read;
+        end else begin
+          o_alu_data_a = s_reg_data_a;
+        end
+      end
       `ALU_SRC_A_PC: o_alu_data_a = i_pc;
       default: o_alu_data_a = 0;
     endcase
 
+    s_mem_hazard_reg_b = 0;
     case(s_alu_src_b)
-      `ALU_SRC_B_XPR: o_alu_data_b = s_reg_data_b;
+      `ALU_SRC_B_XPR: begin
+        if(i_ex_dest_reg == s_reg_b && i_ex_dest_src == `DEST_SRC_ALU) begin
+          o_alu_data_b = i_ex_alu_eval;
+        end else if(i_ex_dest_reg == s_reg_b && i_ex_dest_src == `DEST_SRC_MEM) begin
+          o_alu_data_b = 0;
+          // Stall indicator
+          s_mem_hazard_reg_b = 1;
+        end else if(i_me_dest_reg == s_reg_b && i_me_dest_src == `DEST_SRC_MEM) begin
+          o_alu_data_b = i_me_mem_read;
+        end else begin
+          o_alu_data_b = s_reg_data_b;
+        end
+      end
       `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
       `ALU_SRC_B_INSTR_SIZE: o_alu_data_b = `INSTR_W;
       default: o_alu_data_b = 0;
