@@ -8,15 +8,23 @@ module tb_id;
   localparam CLK_PERIOD = 2;
   localparam RESET_DURATION = 5;
 
-  reg clk;
-  reg clr;
-  reg stall;
-  reg rf_aresetn;
+  reg clk = 0;
+  reg clr = 0;
+  reg stall = 0;
+  reg rf_aresetn = 0;
 
-  reg [`ADDR_W - 1:0] i_pc;
-  reg [`INSTR_W - 1:0] i_instr;
+  reg [`ADDR_W - 1:0] i_pc = 0;
+  reg [`INSTR_W - 1:0] i_instr = 0;
 
-  reg wb_dest_en;
+  reg [`REG_IDX_W - 1:0] ex_dest_reg = 0;
+  reg [`DEST_SRC_W - 1:0] ex_dest_src = `DEST_SRC_NONE;
+  reg [`WORD_W - 1:0] ex_alu_eval = 0;
+
+  reg [`REG_IDX_W - 1:0] me_dest_reg;
+  reg [`DEST_SRC_W - 1:0] me_dest_src = `DEST_SRC_NONE;
+  reg [`WORD_W - 1:0] me_dest_data;
+
+  reg wb_dest_en = 0;
   reg [`REG_IDX_W - 1:0] wb_dest_reg;
   reg [`WORD_W - 1:0] wb_dest_data;
 
@@ -33,6 +41,8 @@ module tb_id;
 
   wire [`DEST_SRC_W - 1:0] dest_src;
   wire [`REG_IDX_W - 1:0] dest_reg;
+
+  wire mem_hazard;
 
   initial begin
     // Initialize dump file and dump all of the signals
@@ -83,6 +93,14 @@ module tb_id;
     .i_pc(i_pc),
     .i_instr(i_instr),
 
+    .i_ex_dest_reg(ex_dest_reg),
+    .i_ex_dest_src(ex_dest_src),
+    .i_ex_alu_eval(ex_alu_eval),
+
+    .i_me_dest_reg(me_dest_reg),
+    .i_me_dest_src(me_dest_src),
+    .i_me_dest_data(me_dest_data),
+
     .i_wb_dest_en(wb_dest_en),
     .i_wb_dest_reg(wb_dest_reg),
     .i_wb_dest_data(wb_dest_data),
@@ -99,7 +117,9 @@ module tb_id;
     .o_mem_op(mem_op),
 
     .o_dest_src(dest_src),
-    .o_dest_reg(dest_reg)
+    .o_dest_reg(dest_reg),
+
+    .o_mem_hazard(mem_hazard)
   );
 
 endmodule
