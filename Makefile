@@ -3,6 +3,7 @@ TB_VVP := $(addsuffix .vvp,$(TB))
 
 VERILOG_GEN := -g2005
 WARNING_LEVEL := -Wall
+TARGET := vvp
 
 CMD_DIR := cmd
 
@@ -17,7 +18,7 @@ clean:
 define TB_template =
 $(1).vvp: $$($(CMD_DIR)/$(1)_cmd)
 	@echo Building $(1).vvp
-	@iverilog -c $(CMD_DIR)/$(1)_cmd $(VERILOG_GEN) $(WARNING_LEVEL) -I config_headers -o $(1).vvp
+	@iverilog -t$(TARGET) -c  $(CMD_DIR)/$(1)_cmd $(VERILOG_GEN) $(WARNING_LEVEL) -I config_headers -o $(1).vvp
 endef
 
 # Use eval to create new make targets
