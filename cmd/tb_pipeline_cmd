@@ -1,0 +1,14 @@
+pipe_util/id_decoder.v
+pipe_util/alu.v
+pipe_util/register_file.v
+
+pipeline/fe.v
+pipeline/id.v
+pipeline/ex.v
+pipeline/me.v
+pipeline/wb.v
+pipeline/pipeline.v
+
+memory_peripheral/instruction_memory.v
+
+tb/tb_pipeline.v
