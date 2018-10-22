@@ -19,6 +19,10 @@ module register_file(
   // Width of index to register
   parameter REG_IDX_W = $clog2(REG_COUNT);
 
+  // Set to 1 to dump registers to dump file
+  parameter DUMP_VARS = 0;
+  parameter DUMP_FILE = "a.vcd";
+
   // Clock (write on rising edge, read on falling edge)
   input clk;
   // Asynchronous reset (active low)
@@ -42,6 +46,16 @@ module register_file(
   reg [REG_W - 1:0] registers [0:REG_COUNT - 1];
 
   integer i;
+
+  initial begin
+    if(DUMP_VARS == 1) begin
+      $dumpfile(DUMP_FILE);
+      for(i = 0; i < REG_COUNT; i = i + 1) begin
+        $dumpvars(0, registers[i]);
+      end
+    end
+  end
+
   always@(posedge clk, negedge aresetn) begin
     // Asynchronous reset
     if(aresetn == 0) begin
