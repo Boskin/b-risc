@@ -30,7 +30,7 @@ module fe(
       if (i_branch == 1) begin
         o_pc <= i_branch_addr;
       end else begin
-        o_pc <= o_pc + `INSTR_W;
+        o_pc <= o_pc + `INSTR_W / 8;
       end
       o_instr_req <= 1;
     end else begin
