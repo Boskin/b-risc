@@ -52,6 +52,7 @@ module id_decoder(
 
   wire [11:0] itype_imm12 = `ITYPE_IMM12(instr);
   wire [11:0] stype_imm12 = `STYPE_IMM12(instr);
+  wire [11:0] btype_imm12 = `BTYPE_IMM12(instr);
 
   always@(*) begin
     case(opcode)
@@ -110,6 +111,15 @@ module id_decoder(
           `FUNCT3_SW: mem_op = `MEM_OP_WR_WORD;
           default: mem_op = `MEM_OP_NOP;
         endcase
+      end
+
+      `OPCODE_BYTPE: begin
+        imm = $signed(btype_imm12);
+
+        alu_a_src = `ALU_SRC_A_XPR;
+        alu_b_src = `ALU_SRC_B_XPR;
+
+        dest_src = `DEST_SRC_NONE;
       end
 
       default: begin
