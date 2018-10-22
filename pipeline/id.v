@@ -57,6 +57,9 @@ module id(
   o_mem_hazard
 );
 
+  parameter DUMP_VARS = 0;
+  parameter DUMP_FILE = "a.vcd";
+
   input clk;
   input clr;
   input stall;
@@ -156,7 +159,10 @@ module id(
   );
 
   // Register file
-  register_file rf(
+  register_file#(
+    .DUMP_VARS(DUMP_VARS),
+    .DUMP_FILE(DUMP_FILE)
+  ) rf(
     .clk(clk),
     .aresetn(rf_reset),
 

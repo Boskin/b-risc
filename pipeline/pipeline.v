@@ -21,6 +21,9 @@ module pipeline(
   i_mem_res_rd_data,
   i_mem_res_code
 );
+  parameter DUMP_VARS = 0;
+  parameter DUMP_FILE = "a.vcd";
+
   input clk;
   input resetn;
   input aresetn;
@@ -107,7 +110,10 @@ module pipeline(
     .o_instr_req(o_instr_req_en)
   );
 
-  id p1(
+  id#(
+    .DUMP_VARS(DUMP_VARS), 
+    .DUMP_FILE(DUMP_FILE)
+  ) p1(
     .clk(clk),
     .clr(id_clr),
     .stall(id_stall),
