@@ -16,6 +16,9 @@ module memory_interface(
 );
   parameter WORD_COUNT = 1 << (`ADDR_W - 2);
 
+  parameter DUMP_VARS = 0;
+  parameter DUMP_FILE = "a.vcd";
+
   // Clock and asynchronous reset
   input clk;
   input aresetn;
@@ -40,6 +43,16 @@ module memory_interface(
   assign s_offset = i_req_addr[1:0];
 
   integer i;
+
+  initial begin
+    if(DUMP_VARS == 1) begin
+      $dumpfile(DUMP_FILE);
+      for(i = 0; i < WORD_COUNT; i = i + 1) begin
+        $dumpvars(0, r_mem[i]);
+      end
+    end
+  end
+
   always@(posedge clk, negedge aresetn) begin
     if(aresetn == 0) begin
 
