@@ -45,7 +45,10 @@ module tb_pipeline;
     clk = ~clk;
   end
 
-  pipeline dut(
+  pipeline#(
+    .DUMP_VARS(1),
+    .DUMP_FILE("tb_pipeline.vcd")
+  ) dut(
     .clk(clk),
     .resetn(resetn),
     .aresetn(rf_aresetn),
@@ -66,12 +69,29 @@ module tb_pipeline;
   instruction_memory#(
     .INSTR_MAX(100),
     .INSTR_FILE("program.dat"),
-    .DUMP_INSTR(1),
+    .DUMP_INSTR(0),
     .DUMP_FILE("tb_pipeline.vcd")
   ) imem(
     .clk(clk),
     .i_req_addr(instr_req_addr),
     .o_res_data(instr_res_data)
+  );
+
+  memory_interface#(
+    .WORD_COUNT(10),
+    .DUMP_VARS(1),
+    ,DUMP_FILE("tb_pipeline.vcd")
+  ) dmem(
+    .clk(clk),
+    .aresetn(rf_aresetn),
+
+    .i_req_addr(mem_req_addr),
+    .i_req_wr_data(mem_req_wr_dsata),
+    .i_req_wr_en(mem_req_wr_en),
+    .i_req_count(mem_req_count),
+
+    .o_res_rd_data(mem_res_rd_data),
+    .o_res_code(mem_res_code)
   );
 
 endmodule
