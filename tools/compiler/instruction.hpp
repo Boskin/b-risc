@@ -20,6 +20,11 @@
 
 #define IMM_ITYPE_OFS (20)
 
+#define IMM_STYPE_STORE_OFS_L (7)
+#define IMM_STYPE_STORE_L(imm) (imm & 0x1f)
+#define IMM_STYPE_STORE_OFS_U (20)
+#define IMM_STYPE_STORE_U(imm) ((imm & 0xfe0) >> 5)
+
 class Instruction_Handler_Base {
 protected:
     uint32_t opc;
