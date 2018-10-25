@@ -9,6 +9,7 @@ pipeline/me.v
 pipeline/wb.v
 pipeline/pipeline.v
 
+memory_peripheral/memory_interface.v
 memory_peripheral/instruction_memory.v
 
 tb/tb_pipeline.v
