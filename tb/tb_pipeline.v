@@ -7,7 +7,7 @@
 module tb_pipeline;
   localparam CLK_HPERIOD = 5;
   localparam CLK_PERIOD = 2 * CLK_HPERIOD;
-  localparam SIM_DURATION = 10;
+  localparam SIM_DURATION = 30;
 
   reg clk = 0;
   reg resetn = 0;
@@ -78,15 +78,15 @@ module tb_pipeline;
   );
 
   memory_interface#(
-    .WORD_COUNT(10),
+    .WORD_COUNT(3),
     .DUMP_VARS(1),
-    ,DUMP_FILE("tb_pipeline.vcd")
+    .DUMP_FILE("tb_pipeline.vcd")
   ) dmem(
     .clk(clk),
     .aresetn(rf_aresetn),
 
     .i_req_addr(mem_req_addr),
-    .i_req_wr_data(mem_req_wr_dsata),
+    .i_req_wr_data(mem_req_wr_data),
     .i_req_wr_en(mem_req_wr_en),
     .i_req_count(mem_req_count),
 
