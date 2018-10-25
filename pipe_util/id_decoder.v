@@ -100,7 +100,7 @@ module id_decoder(
         imm = $signed(stype_imm12);
 
         alu_a_src = `ALU_SRC_A_XPR;
-        alu_b_src = `ALU_SRC_B_IMM;
+        alu_b_src = `ALU_SRC_B_XPR;
 
         dest_src = `DEST_SRC_NONE;
 

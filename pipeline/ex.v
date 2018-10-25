@@ -154,7 +154,8 @@ module ex(
     .zero(s_alu_zero)
   );
 
-  assign o_mem_req_addr = s_alu_eval;
+  assign o_mem_req_addr = r_imm + r_alu_data_a;
+  assign o_mem_req_wr_data = r_alu_data_b;
   
   // Figure out memory request signals based on memory operation
   always@(*) begin
