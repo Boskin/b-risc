@@ -185,6 +185,7 @@ module id(
   // Detect forwardable data hazards and route the data
   function [`WORD_W - 1:0] fwd_alu_data;
     input [`REG_IDX_W - 1:0] reg_num;
+    input [`WORD_W - 1:0] reg_data;
   begin
     if(reg_num == i_ex_dest_reg && i_ex_dest_src == `DEST_SRC_ALU) begin
       fwd_alu_data = i_ex_alu_eval;
@@ -193,7 +194,7 @@ module id(
     end else if(reg_num == i_wb_dest_reg && i_wb_dest_en == 1) begin
       fwd_alu_data = i_wb_dest_data;
     end else begin
-      fwd_alu_data = 0;
+      fwd_alu_data = reg_data;
     end
   end
   endfunction
@@ -215,7 +216,7 @@ module id(
     s_mem_hazard_reg_a = 0;
     case(s_alu_src_a)
       `ALU_SRC_A_XPR: begin
-        o_alu_data_a = fwd_alu_data(s_reg_a);
+        o_alu_data_a = fwd_alu_data(s_reg_a, s_reg_data_a);
         s_mem_hazard_reg_a = mem_hazard_stall(s_reg_a);
       end
       `ALU_SRC_A_PC: o_alu_data_a = i_pc;
@@ -225,7 +226,7 @@ module id(
     s_mem_hazard_reg_b = 0;
     case(s_alu_src_b)
       `ALU_SRC_B_XPR: begin
-        o_alu_data_b = fwd_alu_data(s_reg_b);
+        o_alu_data_b = fwd_alu_data(s_reg_b, s_reg_data_b);
         s_mem_hazard_reg_b = mem_hazard_stall(s_reg_b);
       end
       `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
