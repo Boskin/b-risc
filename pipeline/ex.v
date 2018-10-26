@@ -32,6 +32,8 @@ module ex(
 
   o_alu_eval,
 
+  o_mem_op,
+
   o_mem_req_addr,
   o_mem_req_wr_data,
   o_mem_req_wr_en,
@@ -88,6 +90,8 @@ module ex(
 
   output [`WORD_W - 1:0] o_alu_eval;
 
+  output [`MEM_OP_W - 1:0] o_mem_op;
+
   output [`ADDR_W - 1:0] o_mem_req_addr;
   output [`WORD_W - 1:0] o_mem_req_wr_data;
   output reg o_mem_req_wr_en;
@@ -104,6 +108,8 @@ module ex(
   assign o_dest_reg = r_dest_reg;
 
   assign o_alu_eval = s_alu_eval;
+
+  assign o_mem_op = r_mem_op;
 
   assign o_branch = s_alu_zero & r_branch_op;
   assign o_branch_addr = r_pc + r_imm;
@@ -186,6 +192,16 @@ module ex(
       end
 
       `MEM_OP_RD_BYTE: begin
+        o_mem_req_count = `MEM_COUNT_BYTE;
+        o_mem_req_wr_en = 0;
+      end
+
+      `MEM_OP_RD_UHALF: begin
+        o_mem_req_count = `MEM_COUNT_HALF;
+        o_mem_req_wr_en = 0;
+      end
+
+      `MEM_OP_RD_UBYTE: begin
         o_mem_req_count = `MEM_COUNT_BYTE;
         o_mem_req_wr_en = 0;
       end

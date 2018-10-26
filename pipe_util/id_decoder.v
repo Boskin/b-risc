@@ -88,12 +88,21 @@ module id_decoder(
       end
 
       `OPCODE_STYPE_LOAD: begin
-        imm = {`WORD_W{1'bx}};
+        imm = $signed(itype_imm12);
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_IMM;
         
         dest_src = `DEST_SRC_MEM;
+
+        case(funct3)
+          `FUNCT3_LB: mem_op = `MEM_OP_RD_BYTE;
+          `FUNCT3_LH: mem_op = `MEM_OP_RD_HALF;
+          `FUNCT3_LW: mem_op = `MEM_OP_RD_WORD;
+          `FUNCT3_LBU: mem_op = `MEM_OP_RD_UBYTE;
+          `FUNCT3_LHU: mem_op = `MEM_OP_RD_UHALF;
+          default: mem_op = `MEM_OP_NOP;
+        endcase
       end
 
       `OPCODE_STYPE_STORE: begin

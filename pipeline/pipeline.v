@@ -59,6 +59,7 @@ module pipeline(
   wire [`MEM_OP_W - 1:0] id_mem_op;
   wire [`DEST_SRC_W - 1:0] id_dest_src;
   wire [`REG_IDX_W - 1:0] id_dest_reg;
+  wire id_mem_hazard;
 
   /* EX wires */
   wire ex_clr;
@@ -68,6 +69,7 @@ module pipeline(
   wire [`WORD_W - 1:0] ex_alu_eval;
   wire [`DEST_SRC_W - 1:0] ex_dest_src;
   wire [`REG_IDX_W - 1:0] ex_dest_reg;
+  wire [`MEM_OP_W - 1:0] ex_mem_op;
 
   /* ME wires */
   wire me_clr;
@@ -80,6 +82,7 @@ module pipeline(
 
   /* WB wires */
   wire wb_clr;
+  wire wb_stall;
   wire wb_dest_en;
   wire [`REG_IDX_W - 1:0] wb_dest_reg;
   wire [`WORD_W - 1:0] wb_dest_data;
@@ -90,9 +93,9 @@ module pipeline(
   assign me_clr = ~resetn;
   assign wb_clr = ~resetn;
 
-  assign fe_stall = 0;
-  assign id_stall = 0;
-  assign ex_stall = 0;
+  assign fe_stall = id_mem_hazard;
+  assign id_stall = id_mem_hazard;
+  assign ex_stall = id_mem_hazard;
   assign me_stall = 0;
   assign wb_stall = 0;
 
@@ -146,7 +149,9 @@ module pipeline(
     .o_mem_op(id_mem_op),
 
     .o_dest_src(id_dest_src),
-    .o_dest_reg(id_dest_reg)
+    .o_dest_reg(id_dest_reg),
+
+    .o_mem_hazard(id_mem_hazard)
   );
 
   ex p2(
@@ -178,6 +183,8 @@ module pipeline(
 
     .o_alu_eval(ex_alu_eval),
 
+    .o_mem_op(ex_mem_op),
+
     .o_mem_req_addr(o_mem_req_addr),
     .o_mem_req_wr_data(o_mem_req_wr_data),
     .o_mem_req_wr_en(o_mem_req_wr_en),
@@ -199,6 +206,8 @@ module pipeline(
 
     .i_alu_eval(ex_alu_eval),
     .i_mem_read(i_mem_res_rd_data),
+
+    .i_mem_op(ex_mem_op),
 
     .o_pc(me_pc),
     .o_instr(me_instr),

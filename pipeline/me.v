@@ -1,4 +1,5 @@
 `include "config.vh"
+`include "mem_codes.vh"
 
 module me(
   clk,
@@ -13,6 +14,8 @@ module me(
 
   i_alu_eval,
   i_mem_read,
+
+  i_mem_op,
 
   o_pc,
   o_instr,
@@ -35,6 +38,8 @@ module me(
   input [`WORD_W - 1:0] i_alu_eval;
   input [`WORD_W - 1:0] i_mem_read;
 
+  input [`MEM_OP_W -1:0] i_mem_op;
+
   reg [`ADDR_W - 1:0] r_pc;
   reg [`INSTR_W - 1:0] r_instr;
 
@@ -43,6 +48,7 @@ module me(
 
   reg [`WORD_W - 1:0] r_alu_eval;
   reg [`WORD_W - 1:0] r_mem_read;
+  reg [`WORD_W - 1:0] s_final_mem_read;
 
   output [`ADDR_W - 1:0] o_pc;
   output [`INSTR_W - 1:0] o_instr;
@@ -80,12 +86,20 @@ module me(
     end
   end
 
-  // Figure out what will be written to the register
   always@(*) begin
+    /* Sign-extend the read memory unless an unsigned memory operation was
+     * specified */
+    if(i_mem_op == `MEM_OP_RD_UBYTE || i_mem_op == `MEM_OP_RD_UHALF) begin
+      s_final_mem_read = r_mem_read;
+    end else begin
+      s_final_mem_read = $signed(r_mem_read);
+    end
+
+    // Figure out what will be written to the register
     case(r_dest_src)
       `DEST_SRC_NONE: o_dest_data = 0;
       `DEST_SRC_ALU: o_dest_data = r_alu_eval;
-      `DEST_SRC_MEM: o_dest_data = r_mem_read;
+      `DEST_SRC_MEM: o_dest_data = s_final_mem_read;
       default: o_dest_data = 0;
     endcase
   end
