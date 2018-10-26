@@ -122,23 +122,32 @@ module id(
   reg s_mem_hazard_reg_a;
   reg s_mem_hazard_reg_b;
 
+  reg [`ADDR_W - 1:0] r_temp_pc;
+  reg [`INSTR_W - 1:0] r_temp_instr;
+  reg r_temp_valid;
+
   always@(posedge clk) begin
     if(clr == 1) begin
       r_pc <= 0;
       r_instr <= 0;
+      r_temp_valid <= 0;
     // Only load the registers if not stalling
     end else if(stall == 0) begin
       r_pc <= i_pc;
       r_instr <= i_instr;
+      r_temp_valid <= 0;
+    end else begin
+      r_temp_pc <= i_pc;
+      r_temp_instr <= i_instr;
+      r_temp_valid <= 1;
     end
   end
 
-  // The PC and instructions don't change
-  assign o_pc = r_pc;
-  assign o_instr = r_instr;
+  // If we just stopped stalling, use the preserved instruction
+  assign o_pc = r_temp_valid ? r_temp_pc : r_pc;
+  assign o_instr = r_temp_valid ? r_temp_instr : r_instr;
 
-  // If stalling, use the preserved instruction
-  assign s_instr = r_instr;// stall == 0 ? i_instr : r_instr;
+  assign s_instr = r_temp_valid ? r_temp_instr : r_instr;
 
   // If either register has a memory hazard, a memory hazard happened
   assign o_mem_hazard = s_mem_hazard_reg_a | s_mem_hazard_reg_b;
