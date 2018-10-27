@@ -90,9 +90,9 @@ module me(
     /* Sign-extend the read memory unless an unsigned memory operation was
      * specified */
     if(i_mem_op == `MEM_OP_RD_UBYTE || i_mem_op == `MEM_OP_RD_UHALF) begin
-      s_final_mem_read = r_mem_read;
+      s_final_mem_read = i_mem_read;
     end else begin
-      s_final_mem_read = $signed(r_mem_read);
+      s_final_mem_read = $signed(i_mem_read);
     end
 
     // Figure out what will be written to the register
