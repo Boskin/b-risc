@@ -5,6 +5,7 @@
 #include "r_instruction.hpp"
 #include "i_instruction.hpp"
 #include "s_instruction.hpp"
+#include "s_load_instruction.hpp"
 
 #define OPCODE(funct7, funct3, opcode) ((uint32_t)((funct7 << 10) | (funct3 << 7) | opcode))
 
@@ -33,11 +34,11 @@ int main() {
     handlers["ori"] = new Instruction_Handler_I(0x6);
     handlers["andi"] = new Instruction_Handler_I(0x7);
     
-    /* handlers["lb"] = new Instruction_Handler_I(0, 0x03);
-    handlers["lh"] = new Instruction_Handler_I(0x1, 0x03);
-    handlers["lw"] = new Instruction_Handler_I(0x2, 0x03);
-    handlers["lbu"] = new Instruction_Handler_I(0x4, 0x03);
-    handlers["lhu"] = new Instruction_Handler_I(0x5, 0x03); */
+    handlers["lb"] = new Instruction_Handler_S_Load(0);
+    handlers["lh"] = new Instruction_Handler_S_Load(0x1);
+    handlers["lw"] = new Instruction_Handler_S_Load(0x2);
+    handlers["lbu"] = new Instruction_Handler_S_Load(0x4);
+    handlers["lhu"] = new Instruction_Handler_S_Load(0x5);
 
     handlers["sb"] = new Instruction_Handler_S(0x0);
     handlers["sh"] = new Instruction_Handler_S(0x1);

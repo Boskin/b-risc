@@ -1,6 +1,6 @@
 EXECUTABLE := compiler
 
-OBJS := main.o instruction.o r_instruction.o i_instruction.o l_instruction.o s_instruction.o
+OBJS := main.o instruction.o r_instruction.o i_instruction.o l_instruction.o s_instruction.o s_load_instruction.o
 
 DEBUG_FLAGS := -g
 
@@ -29,3 +29,7 @@ l_instruction.o: l_instruction.cpp l_instruction.hpp instruction.cpp instruction
 
 s_instruction.o: s_instruction.cpp s_instruction.hpp instruction.cpp instruction.hpp
 	g++ -c -Wall -std=c++11 $(DEBUG_FALGS) -o s_instruction.o s_instruction.cpp
+
+s_load_instruction.o: s_load_instruction.cpp s_load_instruction.hpp instruction.cpp instruction.hpp
+	g++ -c -Wall -std=c++11 $(DEBUG_FALGS) -o s_load_instruction.o s_load_instruction.cpp
+
