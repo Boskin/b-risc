@@ -196,11 +196,14 @@ module id(
     input [`REG_IDX_W - 1:0] reg_num;
     input [`WORD_W - 1:0] reg_data;
   begin
-    if(reg_num == i_ex_dest_reg && i_ex_dest_src == `DEST_SRC_ALU) begin
+    if(reg_num != 0 && reg_num == i_ex_dest_reg &&
+        i_ex_dest_src == `DEST_SRC_ALU) begin
       fwd_alu_data = i_ex_alu_eval;
-    end else if(reg_num == i_me_dest_reg && i_me_dest_src != `DEST_SRC_NONE) begin
+    end else if(reg_num != 0 && reg_num == i_me_dest_reg &&
+        i_me_dest_src != `DEST_SRC_NONE) begin
       fwd_alu_data = i_me_dest_data;
-    end else if(reg_num == i_wb_dest_reg && i_wb_dest_en == 1) begin
+    end else if(reg_num != 0 && reg_num == i_wb_dest_reg &&
+        i_wb_dest_en == 1) begin
       fwd_alu_data = i_wb_dest_data;
     end else begin
       fwd_alu_data = reg_data;
@@ -212,7 +215,9 @@ module id(
   function mem_hazard_stall;
     input [`REG_IDX_W - 1:0] reg_num;
   begin
-    if(reg_num == i_ex_dest_reg && i_ex_dest_src == `DEST_SRC_MEM) begin
+    if(reg_num != 0 && reg_num == i_ex_dest_reg &&
+      i_ex_dest_src == `DEST_SRC_MEM) begin
+
       mem_hazard_stall = 1;
     end else begin
       mem_hazard_stall = 0;
