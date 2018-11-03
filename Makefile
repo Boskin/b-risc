@@ -7,6 +7,7 @@ TARGET := vvp
 
 CMD_DIR := cmd
 
+# Specify that all and clean are not file targets
 .PHONY: all clean
 
 all: $(TB_VVP)
