@@ -1,7 +1,6 @@
 addi x0, x0, 0
-addi x1, x0, 1
-add x2, x1, x1
-add x3, x2, x1
-or x4, x1, x2
-sw x4, 0(x0)
-lw x5, 0(x0)
+addi x1, x0, 15
+addi x10, x0, -12
+andi x11, x10, 255
+andi x12, x10, 255
+ori x13, x10, 0

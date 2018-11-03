@@ -14,7 +14,7 @@ uint32_t Instruction_Handler_I::raw_binary(vector<string> args) const {
     int32_t imm = stoi(args[2], 0, 10) & 0x00000fff;
 
     uint32_t opcode = opc & OPCODE_MASK;
-    uint32_t funct3 = opc & FUNCT3_MASK;
+    uint32_t funct3 = (opc & FUNCT3_MASK) >> 7;
     
     return (opcode << OPCODE_OFS) |
         (dest_reg << REG_DEST_OFS) |
