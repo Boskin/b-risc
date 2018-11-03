@@ -95,7 +95,7 @@ module pipeline(
 
   assign fe_stall = id_mem_hazard;
   assign id_stall = id_mem_hazard;
-  assign ex_stall = id_mem_hazard;
+  assign ex_stall = 0;
   assign me_stall = 0;
   assign wb_stall = 0;
 
