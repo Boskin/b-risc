@@ -229,14 +229,19 @@ module id(
   endfunction
 
   // Determine the raw alu inputs
-  always@(*) begin
+  always@(s_reg_a, s_reg_data_a, s_reg_b, s_reg_data_b,
+    i_ex_alu_eval, i_ex_dest_reg, i_ex_dest_src,
+    i_me_dest_data, i_me_dest_reg, i_me_dest_src,
+    i_wb_dest_data, i_wb_dest_reg, i_wb_dest_en,
+    r_pc, o_imm) begin
+
     s_mem_hazard_reg_a = 0;
     case(s_alu_src_a)
       `ALU_SRC_A_XPR: begin
         o_alu_data_a = fwd_alu_data(s_reg_a, s_reg_data_a);
         s_mem_hazard_reg_a = mem_hazard_stall(s_reg_a);
       end
-      `ALU_SRC_A_PC: o_alu_data_a = i_pc;
+      `ALU_SRC_A_PC: o_alu_data_a = r_pc;
       default: o_alu_data_a = 0;
     endcase
 
