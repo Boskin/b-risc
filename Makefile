@@ -2,7 +2,7 @@ TB := $(basename $(notdir $(wildcard tb/*.v)))
 TB_VVP := $(addsuffix .vvp,$(TB))
 
 VERILOG_GEN := -g2005
-WARNING_LEVEL := -Wall
+WARNING_LEVEL := -Wanachronisms -Wimplicit -Wportbind -Wselect-range
 TARGET := vvp
 
 CMD_DIR := cmd
