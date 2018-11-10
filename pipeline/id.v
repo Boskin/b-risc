@@ -113,6 +113,9 @@ module id(
   wire [`ALU_SRC_A_W - 1:0] s_alu_src_a;
   wire [`ALU_SRC_B_W - 1:0] s_alu_src_b;
 
+  wire [`MEM_OP_W - 1:0] s_mem_op;
+  wire [`DEST_SRC_W - 1:0] s_dest_src;
+
   // Register indices and data
   wire [`REG_IDX_W - 1:0] s_reg_a = `INSTR_XPR_A(s_instr);
   wire [`WORD_W - 1:0] s_reg_data_a;
@@ -132,25 +135,31 @@ module id(
       r_instr <= 0;
       r_temp_valid <= 0;
     // Only load the registers if not stalling
-    end else if(stall == 0) begin
-      r_pc <= i_pc;
-      r_instr <= i_instr;
-      r_temp_valid <= 0;
     end else begin
-      r_temp_pc <= i_pc;
-      r_temp_instr <= i_instr;
-      r_temp_valid <= 1;
+      if(r_temp_valid == 0) begin
+        r_pc <= i_pc;
+        r_instr <= i_instr;
+      end
+
+      if(stall == 1) begin
+        r_temp_pc <= r_pc;
+        r_temp_instr <= r_instr;
+      end
+      r_temp_valid <= stall;
     end
   end
 
   // If we just stopped stalling, use the preserved instruction
-  assign o_pc = r_temp_valid ? r_temp_pc : r_pc;
-  assign o_instr = r_temp_valid ? r_temp_instr : r_instr;
+  assign o_pc = (~stall & r_temp_valid) ? r_temp_pc : r_pc;
+  assign o_instr = (~stall & r_temp_valid) ? r_temp_instr : r_instr;
 
-  assign s_instr = r_temp_valid ? r_temp_instr : r_instr;
+  assign s_instr = o_instr;
 
   // If either register has a memory hazard, a memory hazard happened
   assign o_mem_hazard = s_mem_hazard_reg_a | s_mem_hazard_reg_b;
+
+  assign o_mem_op = stall ? `MEM_OP_NOP : s_mem_op;
+  assign o_dest_src = stall ? `DEST_SRC_NONE : s_dest_src;
 
   /* Instruction decoder: determine ALU and memory signals based on
    * instruction */
@@ -160,11 +169,11 @@ module id(
     .alu_op(o_alu_op),
     .imm(o_imm),
 
-    .mem_op(o_mem_op),
+    .mem_op(s_mem_op),
 
     .alu_a_src(s_alu_src_a),
     .alu_b_src(s_alu_src_b),
-    .dest_src(o_dest_src)
+    .dest_src(s_dest_src)
   );
 
   // Register file
