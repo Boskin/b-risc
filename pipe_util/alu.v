@@ -31,6 +31,9 @@ module alu(
       `ALU_XOR: eval = opp_a ^ opp_b;
       `ALU_SLT: eval = $signed(opp_a) < $signed(opp_b);
       `ALU_SLTU: eval = opp_a < opp_b;
+      `ALU_SGE: eval = $signed(opp_a) >= $signed(opp_b);
+      `ALU_SGEU: eval = opp_a >= opp_b;
+      `ALU_SNE: eval = opp_a != opp_b;
       default: eval = 0;
     endcase
   end

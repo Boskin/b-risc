@@ -49,10 +49,14 @@ module id(
   // Memory operation to perform
   o_mem_op,
 
+  o_branch_op,
+
   // What to write to the destination register
   o_dest_src,
   // The actual destination register
   o_dest_reg,
+
+  o_branch_op,
 
   o_mem_hazard
 );
@@ -102,6 +106,8 @@ module id(
 
   output [`MEM_OP_W - 1:0] o_mem_op;
 
+  output o_branch_op;
+
   // Destination register write source (alu or memory)
   output [`DEST_SRC_W - 1:0] o_dest_src;
   output [`REG_IDX_W - 1:0] o_dest_reg;
@@ -115,6 +121,7 @@ module id(
 
   wire [`MEM_OP_W - 1:0] s_mem_op;
   wire [`DEST_SRC_W - 1:0] s_dest_src;
+  wire s_branch_op;
 
   // Register indices and data
   wire [`REG_IDX_W - 1:0] s_reg_a = `INSTR_XPR_A(s_instr);
@@ -160,6 +167,7 @@ module id(
 
   assign o_mem_op = stall ? `MEM_OP_NOP : s_mem_op;
   assign o_dest_src = stall ? `DEST_SRC_NONE : s_dest_src;
+  assign o_branch_op = stall & s_branch_op;
 
   /* Instruction decoder: determine ALU and memory signals based on
    * instruction */
@@ -173,7 +181,9 @@ module id(
 
     .alu_a_src(s_alu_src_a),
     .alu_b_src(s_alu_src_b),
-    .dest_src(s_dest_src)
+    .dest_src(s_dest_src),
+
+    .branch_op(s_branch_op)
   );
 
   // Register file

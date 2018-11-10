@@ -28,7 +28,7 @@
 // Load instructions (same format as i-type)
 `define OPCODE_STYPE_LOAD (7'b0000011)
 // Branch type
-`define OPCODE_BYTPE (7'b1100011)
+`define OPCODE_BTYPE (7'b1100011)
 
 // Macro for 0 extension
 `define EXTEND(width1, sig, width2) ({((width2) - (width1)){1'b0}, (sig)})
@@ -90,6 +90,14 @@
 `define FUNCT3_SH (3'b001)
 `define FUNCT3_SW (3'b010)
 
+// Branch instructions
+`define FUNCT3_BEQ (3'b000)
+`define FUNCT3_BNE (3'b001)
+`define FUNCT3_BLT (3'b100)
+`define FUNCT3_BGE (3'b101)
+`define FUNCT3_BLTU (3'b110)
+`define FUNCT3_BGEU (3'b111)
+
 // Various funct7 fields for some of the R-type instructions
 `define FUNCT7_ADD (7'b0000000)
 `define FUNCT7_SUB (7'b0100000)
@@ -121,5 +129,12 @@
 `define OPC_XORI ({7'b0000000, `FUNCT3_XOR, `OPCODE_ITYPE})
 `define OPC_ORI ({7'b0000000, `FUNCT3_OR, `OPCODE_ITYPE})
 `define OPC_ANDI ({7'b0000000, `FUNCT3_AND, `OPCODE_ITYPE})
+
+`define OPC_BEQ ({7'h00, `FUNCT3_BEQ, `OPCODE_BTYPE})
+`define OPC_BNE ({7'h00, `FUNCT3_BNE, `OPCODE_BTYPE})
+`define OPC_BLT ({7'h00, `FUNCT3_BLT, `OPCODE_BTYPE})
+`define OPC_BGE ({7'h00, `FUNCT3_BGE, `OPCODE_BTYPE})
+`define OPC_BLTU ({7'h00, `FUNCT3_BLTU, `OPCODE_BTYPE})
+`define OPC_BGEU ({7'h00, `FUNCT3_BGEU, `OPCODE_BTYPE})
 
 `endif

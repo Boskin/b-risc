@@ -20,6 +20,9 @@ module id_decoder(
   // Memory operation to perform
   mem_op,
 
+  // Flag indicating if this is a branch operation or not
+  branch_op,
+
   // What to write to the destination register (ALU output or memory read)
   dest_src
 );
@@ -37,6 +40,8 @@ module id_decoder(
   output reg [`ALU_SRC_B_W - 1:0] alu_b_src;
 
   output reg [`MEM_OP_W - 1:0] mem_op;
+
+  output reg branch_op;
 
   output reg [`DEST_SRC_W - 1:0] dest_src;
 
@@ -68,6 +73,7 @@ module id_decoder(
   always@(*) begin
     // Some default control signals
     mem_op = `MEM_OP_NOP;
+    branch_op = 0;
     case(opcode)
       `OPCODE_RTYPE: begin
         imm = {`WORD_W{1'bx}};
@@ -122,13 +128,15 @@ module id_decoder(
         endcase
       end
 
-      `OPCODE_BYTPE: begin
+      `OPCODE_BTYPE: begin
         imm = $signed(btype_imm12);
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_XPR;
 
         dest_src = `DEST_SRC_NONE;
+
+        branch_op = 1;
       end
 
       default: begin
@@ -151,6 +159,12 @@ module id_decoder(
       `OPC_XOR, `OPC_XORI: alu_op = `ALU_XOR;
       `OPC_OR, `OPC_ORI: alu_op = `ALU_OR;
       `OPC_AND, `OPC_ANDI: alu_op = `ALU_AND;
+      `OPC_BEQ: alu_op = `ALU_XOR;
+      `OPC_BNE: alu_op = `ALU_SNE;
+      `OPC_BLT: alu_op = `ALU_SGE;
+      `OPC_BGE: alu_op = `ALU_SLT;
+      `OPC_BLTU: alu_op = `ALU_SGE;
+      `OPC_BGEU: alu_op = `ALU_SGEU;
       default: alu_op = `ALU_ADD;
     endcase
   end

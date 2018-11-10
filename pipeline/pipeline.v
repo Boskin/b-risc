@@ -59,6 +59,7 @@ module pipeline(
   wire [`MEM_OP_W - 1:0] id_mem_op;
   wire [`DEST_SRC_W - 1:0] id_dest_src;
   wire [`REG_IDX_W - 1:0] id_dest_reg;
+  wire id_branch_op;
   wire id_mem_hazard;
 
   /* EX wires */
@@ -151,6 +152,8 @@ module pipeline(
     .o_dest_src(id_dest_src),
     .o_dest_reg(id_dest_reg),
 
+    .o_branch_op(id_branch_op),
+
     .o_mem_hazard(id_mem_hazard)
   );
 
@@ -173,7 +176,7 @@ module pipeline(
     .i_dest_src(id_dest_src),
     .i_dest_reg(id_dest_reg),
 
-    .i_branch_op(1'b0),
+    .i_branch_op(id_branch_op),
 
     .o_pc(ex_pc),
     .o_instr(ex_instr),
