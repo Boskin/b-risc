@@ -1,6 +1,8 @@
+# Generate a list of testbench vvp's
 TB := $(basename $(notdir $(wildcard tb/*.v)))
 TB_VVP := $(addsuffix .vvp,$(TB))
 
+# Verilog generation
 VERILOG_GEN := -g2005
 WARNING_LEVEL := -Wanachronisms -Wimplicit -Wportbind -Wselect-range
 TARGET := vvp
@@ -16,6 +18,8 @@ clean:
 	rm -rf *.vvp
 	rm -rf *.vcd
 
+# Use this define to automatically generate the targets fo testbench vvp's by
+# reading the module dependency lists from their cmd files
 define TB_template =
 $(1).vvp: $$($(CMD_DIR)/$(1)_cmd)
 	@echo Building $(1).vvp
