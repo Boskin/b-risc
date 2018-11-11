@@ -6,6 +6,7 @@
 #include "i_instruction.hpp"
 #include "s_instruction.hpp"
 #include "s_load_instruction.hpp"
+#include "b_instruction.hpp"
 
 #define OPCODE(funct7, funct3, opcode) ((uint32_t)((funct7 << 10) | (funct3 << 7) | opcode))
 
@@ -43,6 +44,13 @@ int main() {
     handlers["sb"] = new Instruction_Handler_S(0x0);
     handlers["sh"] = new Instruction_Handler_S(0x1);
     handlers["sw"] = new Instruction_Handler_S(0x2);
+
+    handlers["beq"] = new Instruction_Handler_B(0x0);
+    handlers["bne"] = new Instruction_Handler_B(0x1);
+    handlers["blt"] = new Instruction_Handler_B(0x4);
+    handlers["bge"] = new Instruction_Handler_B(0x5);
+    handlers["bltu"] = new Instruction_Handler_B(0x6);
+    handlers["bgeu"] = new Instruction_Handler_B(0x7);
 
     std::vector<std::string> code;
 
