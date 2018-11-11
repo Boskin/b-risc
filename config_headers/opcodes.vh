@@ -39,7 +39,7 @@
 // Macros for extracting signed immediate values from instructions
 `define ITYPE_IMM12(instr) (instr[31:20])
 `define BTYPE_IMM12(instr) \
-({instr[31], instr[7], instr[30:25], instr[11:8]})
+({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0})
 `define STYPE_IMM12(instr) ({instr[31:25], instr[11:7]})
 
 // Macros for getting input and output registers
