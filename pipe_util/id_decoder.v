@@ -52,6 +52,7 @@ module id_decoder(
   wire [16:0] opcode_rtype = `OPCODE_COMPLETE_RTYPE(instr);
   wire [16:0] opcode_itype = `OPCODE_COMPLETE_ITYPE(instr);
   wire [16:0] opcode_stype = `OPCODE_COMPLETE_STYPE(instr);
+  wire [16:0] opcode_btype = `OPCODE_COMPLETE_BTYPE(instr);
 
   reg [16:0] opcode_complete;
 
@@ -66,6 +67,7 @@ module id_decoder(
       // Load and store instructions
       `OPCODE_STYPE_LOAD: opcode_complete = opcode_stype;
       `OPCODE_STYPE_STORE: opcode_complete = opcode_stype;
+      `OPCODE_BTYPE: opcode_complete = opcode_btype;
       default: opcode_complete = 0;
     endcase
   end

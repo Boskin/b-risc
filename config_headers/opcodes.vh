@@ -18,6 +18,10 @@
 `define OPCODE_COMPLETE_STYPE(instr) \
 ({7'b0, `FUNCT3(instr), `OPCODE(instr)})
 
+// Macro for forming a full B-type opcode
+`define OPCODE_COMPLETE_BTYPE(instr) \
+({7'b0, `FUNCT3(instr), `OPCODE(instr)})
+
 // 7 bits of each instruction define its type
 // Triple register instructions
 `define OPCODE_RTYPE (7'b0110011)
