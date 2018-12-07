@@ -29,7 +29,7 @@ module fe(
       r_pc <= 0;
     end else if(stall == 0) begin
       if (i_branch == 1) begin
-        r_pc <= i_branch_addr;
+        r_pc <= i_branch_addr + `INSTR_W / 8;
       end else begin
         r_pc <= r_pc + `INSTR_W / 8;
       end
