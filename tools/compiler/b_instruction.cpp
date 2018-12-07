@@ -6,7 +6,7 @@ using std::vector;
 uint32_t Instruction_Handler_B::raw_binary(vector<string> args) const {
     uint32_t reg_a = Instruction_Handler_Base::reg_number(args[0]);
     uint32_t reg_b = Instruction_Handler_Base::reg_number(args[1]);
-    int32_t imm = stoi(args[2], 0, 10) & 0x00000fff;
+    int32_t imm = (stoi(args[2], 0, 10) & 0x00000fff) << 1;
 
     uint32_t opcode = opc & OPCODE_MASK;
     uint32_t funct3 = (opc & FUNCT3_MASK) >> 7;
