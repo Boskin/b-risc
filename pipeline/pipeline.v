@@ -89,8 +89,8 @@ module pipeline(
   wire [`WORD_W - 1:0] wb_dest_data;
 
   assign fe_clr = ~resetn;
-  assign id_clr = ~resetn;
-  assign ex_clr = ~resetn;
+  assign id_clr = ~resetn | fe_branch;
+  assign ex_clr = ~resetn | fe_branch;
   assign me_clr = ~resetn;
   assign wb_clr = ~resetn;
 
@@ -107,12 +107,17 @@ module pipeline(
     .clr(fe_clr),
     .stall(fe_stall),
 
-    .i_branch(1'b0),
-    .i_branch_addr({`ADDR_W{1'b0}}),
+    .i_branch(fe_branch),
+    .i_branch_addr(fe_branch_addr),
 
     .o_pc(fe_pc),
     .o_instr_req(o_instr_req_en)
   );
+
+  reg [`ADDR_W - 1:0] fe_pc_delay;
+  always@(posedge clk) begin
+    fe_pc_delay <= fe_pc;
+  end
 
   id#(
     .DUMP_VARS(DUMP_VARS), 
@@ -123,7 +128,7 @@ module pipeline(
     .stall(id_stall),
     .rf_reset(aresetn),
     
-    .i_pc(fe_pc),
+    .i_pc(fe_pc_delay),
     .i_instr(i_instr_res_data),
 
     .i_ex_dest_reg(ex_dest_reg),
@@ -193,7 +198,8 @@ module pipeline(
     .o_mem_req_wr_en(o_mem_req_wr_en),
     .o_mem_req_count(o_mem_req_count),
 
-    .o_branch_addr()
+    .o_branch(fe_branch),
+    .o_branch_addr(fe_branch_addr)
   );
 
   me p3(
