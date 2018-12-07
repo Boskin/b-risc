@@ -78,7 +78,7 @@ module id_decoder(
     branch_op = 0;
     case(opcode)
       `OPCODE_RTYPE: begin
-        imm = {`WORD_W{1'bx}};
+        imm = {`WORD_W{1'b0}};
 
         alu_a_src = `ALU_SRC_A_XPR;
         alu_b_src = `ALU_SRC_B_XPR;
