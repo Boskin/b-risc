@@ -49,8 +49,6 @@ module id(
   // Memory operation to perform
   o_mem_op,
 
-  o_branch_op,
-
   // What to write to the destination register
   o_dest_src,
   // The actual destination register
@@ -167,7 +165,7 @@ module id(
 
   assign o_mem_op = stall ? `MEM_OP_NOP : s_mem_op;
   assign o_dest_src = stall ? `DEST_SRC_NONE : s_dest_src;
-  assign o_branch_op = stall & s_branch_op;
+  assign o_branch_op = ~stall & s_branch_op;
 
   /* Instruction decoder: determine ALU and memory signals based on
    * instruction */
