@@ -100,6 +100,7 @@ module me(
       `DEST_SRC_NONE: o_dest_data = 0;
       `DEST_SRC_ALU: o_dest_data = r_alu_eval;
       `DEST_SRC_MEM: o_dest_data = s_final_mem_read;
+      `DEST_SRC_PC4: o_dest_data = r_pc + `INSTR_W / 8;
       default: o_dest_data = 0;
     endcase
   end
