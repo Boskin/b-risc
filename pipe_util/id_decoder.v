@@ -68,6 +68,10 @@ module id_decoder(
       `OPCODE_STYPE_LOAD: opcode_complete = opcode_stype;
       `OPCODE_STYPE_STORE: opcode_complete = opcode_stype;
       `OPCODE_BTYPE: opcode_complete = opcode_btype;
+      `OPCODE_LUI: opcode_complete = `OPC_LUI;
+      `OPCODE_AUIPC: opcode_complete = `OPC_AUIPC;
+      `OPCODE_JAL: opcode_complete = `OPC_JAL;
+      `OPCODE_JALR: opcode_complete = `OPC_JALR;
       default: opcode_complete = 0;
     endcase
   end
@@ -141,6 +145,46 @@ module id_decoder(
         branch_op = 1;
       end
 
+      `OPCODE_LUI: begin
+        imm = `LUI_IMM20(instr);
+
+        alu_a_src = `ALU_SRC_A_NONE;
+        alu_b_src = `ALU_SRC_B_IMM;
+
+        dest_src = `DEST_SRC_ALU;
+      end
+
+      `OPCODE_AUIPC: begin
+        imm = `AUIPC_IMM20(instr);
+
+        alu_a_src = `ALU_SRC_A_PC;
+        alu_b_src = `ALU_SRC_B_IMM;
+
+        dest_src = `DEST_SRC_ALU;
+      end
+
+      `OPCODE_JAL: begin
+        imm = `JAL_IMM20(instr);
+
+        alu_a_src = `ALU_SRC_A_NONE;
+        alu_b_src = `ALU_SRC_B_NONE;
+
+        dest_src = `DEST_SRC_NONE;
+
+        branch_op = 1;
+      end
+
+      `OPCODE_JALR: begin
+        imm = `JALR_IMM12(instr);
+
+        alu_a_src = `ALU_SRC_A_NONE;
+        alu_b_src = `ALU_SRC_B_NONE;
+
+        dest_src = `DEST_SRC_PC4;
+
+        branch_op = 1;
+      end
+
       default: begin
         imm = 0;
 
@@ -167,6 +211,10 @@ module id_decoder(
       `OPC_BGE: alu_op = `ALU_SLT;
       `OPC_BLTU: alu_op = `ALU_SGE;
       `OPC_BGEU: alu_op = `ALU_SGEU;
+      `OPC_LUI: alu_op = `ALU_ADD;
+      `OPC_AUIPC: alu_op = `ALU_ADD;
+      `OPC_JAL: alu_op = `ALU_ADD;
+      `OPC_JALR: alu_op = `ALU_ADD;
       default: alu_op = `ALU_ADD;
     endcase
   end

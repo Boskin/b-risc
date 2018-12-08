@@ -34,6 +34,12 @@
 // Branch type
 `define OPCODE_BTYPE (7'b1100011)
 
+// Instructions with their own opcodes
+`define OPCODE_LUI (7'b0110111)
+`define OPCODE_AUIPC (7'b0010111)
+`define OPCODE_JAL (7'b1101111)
+`define OPCODE_JALR (7'b1100111)
+
 // Macro for 0 extension
 `define EXTEND(width1, sig, width2) ({((width2) - (width1)){1'b0}, (sig)})
 // Macro for sign extension 
@@ -46,6 +52,12 @@
 ({instr[31], instr[7], instr[30:25], instr[11:8], 1'b0})
 `define STYPE_IMM12(instr) ({instr[31:25], instr[11:7]})
 
+`define LUI_IMM20(instr) ({instr[31:12], 12'b0})
+`define AUIPC_IMM20(instr) ({instr[31:12], 12'b0})
+`define JAL_IMM20(instr) ({instr[31], instr[19:12], instr[20], instr[30:21], \
+12'b0})
+`define JALR_IMM12(instr) ($signed(instr[31:20]))
+
 // Macros for getting input and output registers
 `define INSTR_XPR_A(instr) (instr[19:15])
 `define INSTR_XPR_B(instr) (instr[24:20])
@@ -53,23 +65,26 @@
 
 
 // Enum for control signal that defines the "A" input to the ALU
-`define ALU_SRC_A_XPR 0
-`define ALU_SRC_A_PC 1
-`define ALU_SRC_A_W 1
+`define ALU_SRC_A_XPR (0)
+`define ALU_SRC_A_PC (1)
+`define ALU_SRC_A_NONE (2)
+`define ALU_SRC_A_W (2)
 
 
 // Enum for control signal that defines the "B" input to the ALU
-`define ALU_SRC_B_XPR 0
-`define ALU_SRC_B_IMM 1
-`define ALU_SRC_B_INSTR_SIZE 2
-`define ALU_SRC_B_W 2
+`define ALU_SRC_B_XPR (0)
+`define ALU_SRC_B_IMM (1)
+`define ALU_SRC_B_INSTR_SIZE (2)
+`define ALU_SRC_B_NONE (3)
+`define ALU_SRC_B_W (2)
 
 
 // Enum that deifnes what gets written to the destination register
-`define DEST_SRC_NONE 0
-`define DEST_SRC_ALU 1
-`define DEST_SRC_MEM 2
-`define DEST_SRC_W 2
+`define DEST_SRC_NONE (0)
+`define DEST_SRC_ALU (1)
+`define DEST_SRC_MEM (2)
+`define DEST_SRC_PC4 (3)
+`define DEST_SRC_W (2)
 
 // Various funct3 fields for some instructions (used by the ALU)
 `define FUNCT3_ADD (3'b000)
@@ -140,5 +155,10 @@
 `define OPC_BGE ({7'h00, `FUNCT3_BGE, `OPCODE_BTYPE})
 `define OPC_BLTU ({7'h00, `FUNCT3_BLTU, `OPCODE_BTYPE})
 `define OPC_BGEU ({7'h00, `FUNCT3_BGEU, `OPCODE_BTYPE})
+
+`define OPC_LUI ({10'b0, `OPCODE_LUI})
+`define OPC_AUIPC ({10'b0, `OPCODE_AUIPC})
+`define OPC_JAL ({10'b0, `OPCODE_JAL})
+`define OPC_JALR ({10'b0, `OPCODE_JALR})
 
 `endif
