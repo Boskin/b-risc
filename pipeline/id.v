@@ -259,6 +259,7 @@ module id(
         s_mem_hazard_reg_a = mem_hazard_stall(s_reg_a);
       end
       `ALU_SRC_A_PC: o_alu_data_a = r_pc;
+      `ALU_SRC_A_NONE: o_alu_data_a = 0;
       default: o_alu_data_a = 0;
     endcase
 
@@ -269,7 +270,8 @@ module id(
         s_mem_hazard_reg_b = mem_hazard_stall(s_reg_b);
       end
       `ALU_SRC_B_IMM: o_alu_data_b = o_imm;
-      `ALU_SRC_B_INSTR_SIZE: o_alu_data_b = `INSTR_W;
+      `ALU_SRC_B_INSTR_SIZE: o_alu_data_b = `INSTR_W / 8;
+      `ALU_SRC_B_NONE: o_alu_data_b = 0;
       default: o_alu_data_b = 0;
     endcase
   end
