@@ -4,3 +4,4 @@ addi x10, x0, -12
 andi x11, x10, 255
 andi x12, x10, 255
 ori x13, x10, 0
+sw x10, 0(x0)

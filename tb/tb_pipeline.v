@@ -33,9 +33,8 @@ module tb_pipeline;
     resetn = 1;
     rf_aresetn = 1;
 
-    repeat (SIM_DURATION) begin
-      #CLK_PERIOD;
-    end
+
+    wait (instr_req_addr[`ADDR_W - 1:2] == 'h100);
 
     $finish();
   end
@@ -67,7 +66,7 @@ module tb_pipeline;
   );
 
   instruction_memory#(
-    .INSTR_MAX(100),
+    .INSTR_MAX(256),
     .INSTR_FILE("program.dat"),
     .DUMP_INSTR(0),
     .DUMP_FILE("tb_pipeline.vcd")

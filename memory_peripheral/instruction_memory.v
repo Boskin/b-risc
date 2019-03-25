@@ -15,7 +15,7 @@ module instruction_memory(
   o_res_data
 );
 
-  parameter INSTR_MAX = 100;
+  parameter INSTR_MAX = 256;
   parameter INSTR_FILE = "instr.txt";
   parameter DUMP_INSTR = 0;
   parameter DUMP_FILE = "a.vcd";
@@ -32,41 +32,8 @@ module instruction_memory(
 
   reg [`INSTR_W - 1:0] r_mem [0:INSTR_MAX - 1];
 
-  initial begin
-  end
-
-  initial begin
-    if(DUMP_INSTR == 1) begin
-      $dumpfile(DUMP_FILE);
-      for(i = 0; i < INSTR_MAX; i = i + 1) begin
-        $dumpvars(0, r_mem[i]);
-      end
-    end
-    instr_file = $fopen(INSTR_FILE, "r");
-    if(instr_file == 0) begin
-      $display("Error! Couldn't open the input instruction file!");
-      // Make everything a NOP
-      for(i = 0; i < INSTR_MAX; i = i + 1) begin
-        r_mem[i] = `NOP; 
-      end
-    end else begin
-      i = 0;
-      /* Keep reading as long as there are instructions in the file and there
-       * is room; keep two empty spots for NOPs at the end */
-      while(!$feof(instr_file) && i < INSTR_MAX - 2) begin
-        fscanf_ret = $fscanf(instr_file, "%h\n", r_mem[i]);
-        if(fscanf_ret < 1) begin
-          r_mem[i] = `NOP;
-        end
-        i = i + 1;
-      end
-
-      // Fill the rest of the instructions with NOPs
-      while(i < INSTR_MAX) begin
-        r_mem[i] = `NOP;
-        i = i + 1;
-      end
-    end
+  initial begin: load_instr
+    $readmemh(INSTR_FILE, r_mem, 0, INSTR_MAX - 1);
   end
 
   // Word address

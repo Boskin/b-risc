@@ -12,7 +12,7 @@
 
 void load_instruction(std::vector<std::string>& code, const char* file);
 
-int main() {
+int main(int argc, char* argv[]) {
     std::unordered_map<std::string, Instruction_Handler_Base*> handlers;
 
     // R type instruction handlers
@@ -63,17 +63,28 @@ int main() {
         code_tokenized.push_back(tokens);
     }
 
+    int i_count = 0;
     for(auto it = code_tokenized.begin(); it != code_tokenized.end(); ++it) {
         std::string instr = it->front();
         it->erase(it->begin());
+        ++i_count;
 
         Instruction_Handler_Base* h = handlers[instr];
         if(h != NULL) {
+            // Output in hex
             std::cout << std::setbase(16) << std::setw(8) << std::setfill('0') <<
-              h->raw_binary(*it) << '\n';
+                h->raw_binary(*it) << '\n';
+        }
+    }
+    if(i_count < 256) {
+        for(int i = 0; i < 256 - i_count; ++i) {
+            uint32_t nop = 0x13;
+            std::cout << std::setbase(16) << std::setw(8) <<
+                std::setfill('0') << nop << '\n';
         }
     }
 
+    // Deallocate instruction handlers
     for(auto it = handlers.begin(); it != handlers.end(); ++it) {
         delete it->second;
     }
